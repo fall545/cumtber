@@ -5,7 +5,8 @@
 class ExprAST {
 public:
   virtual ~ExprAST() = default;
-
+  
+  virtual std::string getName();
   virtual void codegen() = 0;
 };
 
@@ -25,7 +26,8 @@ class VariableExprAST : public ExprAST {
 
 public:
   VariableExprAST(const std::string &Name) : Name(Name) {}
-
+  
+  std::string getName() {return Name;}
   void codegen() override;
 };
 
@@ -50,7 +52,8 @@ public:
   BinaryExprAST(char Op, std::unique_ptr<ExprAST> LHS,
                 std::unique_ptr<ExprAST> RHS)
       : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
-
+  
+  std::string getName() {return std::string(1, Op);};
   void codegen() override;
 };
 
@@ -96,8 +99,6 @@ public:
 class PrototypeAST {
   std::string Name;
   std::vector<std::string> Args;
-  bool IsOperator;
-  unsigned Precedence; // Precedence if a binary op.
 
 public:
   PrototypeAST(const std::string &Name, std::vector<std::string> Args,
