@@ -1,4 +1,6 @@
 #include <string>
+#include <memory>
+
 class ExprAST {
 public:
   virtual ~ExprAST() = default;
@@ -17,6 +19,7 @@ public:
 };
 
 /// VariableExprAST - Expression class for referencing a variable, like "a".
+
 class VariableExprAST : public ExprAST {
   std::string Name;
 
