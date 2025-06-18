@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(MyProject)
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 递归查找 src 下的所有 .cpp 文件
+file(GLOB_RECURSE SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
+
+# 添加可执行文件（包括 main.cpp 和 src 目录下的所有 .cpp）
+add_executable(MyExecutable main.cpp ${SRC_FILES})
+
+# 包含头文件路径
+target_include_directories(MyExecutable PRIVATE "${CMAKE_SOURCE_DIR}/include")
