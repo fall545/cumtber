@@ -74,7 +74,12 @@ static int CurTok;
 static int getNextToken() { return CurTok = gettok(); }
 
 
-static std::map<char, int> BinopPrecedence;//   +-*/ = 10 10 20 20 
+static std::map<char, int> BinopPrecedence = {
+  {'+', 10},
+  {'-', 10},
+  {'*', 20},
+  {'/', 20}
+};//   +-*/ = 10 10 20 20 
 
 static int GetTokPrecedence() {
   if (!isascii(CurTok))
