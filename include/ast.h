@@ -22,7 +22,7 @@ class NumberExprAST : public ExprAST {
 
 public:
   NumberExprAST(double Val) : Val(Val) {}
-  
+  double getValue() const {return Val;};
   void codegen() override {;};
 };
 
@@ -60,6 +60,9 @@ public:
       : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
   
   std::string getName() const {return std::string(1, Op);};
+  const std::unique_ptr<ExprAST>& getLHS() const { return LHS; };
+  const std::unique_ptr<ExprAST>& getRHS() const { return RHS; };
+  char getOp() const {return Op;};
   void codegen() override {;};
 };
 
@@ -72,7 +75,8 @@ public:
   CallExprAST(const std::string &Callee,
               std::vector<std::unique_ptr<ExprAST>> Args)
       : Callee(Callee), Args(std::move(Args)) {}
-
+  std::string getCallee() const {return Callee;};
+  const std::vector<std::unique_ptr<ExprAST>>& getArgs() const {return Args;};
   void codegen() override {;};
 };
 
@@ -131,4 +135,5 @@ public:
   void codegen();
 };
 
-Status CreateTree();
+Status CreateTree(std::unique_ptr<ExprAST>& r);
+Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node);

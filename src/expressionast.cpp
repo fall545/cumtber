@@ -32,17 +32,27 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
             std::string nestedCallee = IdentifierStr;
             int nestedFlag = getNextToken();
             if (nestedFlag == '(') {
+                // 嵌套函数调用
                 args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
             } else {
                 args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
             }
+        } else if (nextFlag == ',') {
+            // 跳过逗号，继续解析下一个参数
+            continue;
         } else {
             throw std::runtime_error("Unexpected token in nested call");
         }
     }
     return args;
 }
-Status CreateTree() {
+/**
+ * @brief Creates an abstract syntax tree (AST) from a sequence of tokens.
+ * 
+ * @param r Reference to an ExprAST object where the resulting AST will be stored.
+ * @return Status OK if the tree is successfully created, ERROR if an invalid token is encountered.
+ */
+Status CreateTree(std::unique_ptr<ExprAST>& r) {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
@@ -53,29 +63,30 @@ Status CreateTree() {
         int nextFlag = getNextToken();
         ch_flag = nextFlag;
         if (nextFlag == '(') {
-            // 解析函数调用（包括嵌套调用）
+            // 函数调用
             std::vector<std::unique_ptr<ExprAST>> args;
-
             while ((nextFlag = getNextToken()) != ')') {
+                // std::cout<<NumVal;
                 if (nextFlag == tok_number) {
                     args.push_back(std::make_unique<NumberExprAST>(NumVal));
                 } else if (nextFlag == tok_identifier) {
-                    // 递归解析嵌套函数调用
                     std::string nestedCallee = IdentifierStr;
                     int nestedFlag = getNextToken();
                     if (nestedFlag == '(') {
-                        // 嵌套函数调用
                         args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
                     } else {
                         args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
                     }
+                } else if (nextFlag == ',') {
+                    // 跳过逗号，继续解析下一个参数
+                    continue;
                 } else {
-                    return ERROR; // 非法标记
+                    return ERROR;
                 }
             }
-
             // 将函数调用节点压入操作数栈
             operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
+            ch_flag = getNextToken();
         } else {
             // 普通标识符
             operands.push(std::make_unique<VariableExprAST>(callee));
@@ -190,9 +201,48 @@ Status CreateTree() {
     if (!operands.empty()) {
         auto root = std::move(operands.top());
         operands.pop();
-        // 此处可以返回或存储根节点
+        r = std::move(root);
     }
     return OK;
 }
 
+Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
+    if (!node) return OK; // 如果节点为空，直接返回
+
+    // 根据节点类型进行处理
+    if (const auto* binaryNode = dynamic_cast<const BinaryExprAST*>(node.get())) {
+        // 中序遍历左子树
+        InOrderTraverseTree(binaryNode->getLHS());
+
+        // 输出当前节点（操作符）
+        std::cout << binaryNode->getOp() << " ";
+
+        // 中序遍历右子树
+        InOrderTraverseTree(binaryNode->getRHS());
+    } else if (const auto* numberNode = dynamic_cast<const NumberExprAST*>(node.get())) {
+        // 输出数字节点的值
+        std::cout << numberNode->getValue() << " ";
+    } else if (const auto* variableNode = dynamic_cast<const VariableExprAST*>(node.get())) {
+        // 输出变量节点的名称
+        std::cout << variableNode->getName() << " ";
+    } else if (const auto* callNode = dynamic_cast<const CallExprAST*>(node.get())) {
+        // 输出函数调用节点
+        std::cout << callNode->getCallee() << "(";
+
+        // 遍历函数参数
+        const auto& args = callNode->getArgs();
+        for (size_t i = 0; i < args.size(); ++i) {
+            InOrderTraverseTree(args[i]);
+            if (i < args.size() - 1) {
+                std::cout << ", ";
+            }
+        }
+
+        std::cout << ") ";
+    } else {
+        throw std::runtime_error("Unknown node type in AST traversal");
+    }
+
+    return OK;
+}
 
