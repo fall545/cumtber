@@ -2,12 +2,6 @@
 #include "ast.h"
 #include <stack>
 
-typedef int Status;
-enum {
-    ERROR,
-    OK
-};
-
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
     else if (a != '#' && b == '#') return '>';
@@ -27,24 +21,57 @@ char Precede(const char& a, const char& b) {
     else if (precA < precB) return '<';
     else return '='; // Equal precedence
 }
-
+// 辅助函数：递归解析嵌套函数调用
+std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
+    std::vector<std::unique_ptr<ExprAST>> args;
+    int nextFlag;
+    while ((nextFlag = getNextToken()) != ')') {
+        if (nextFlag == tok_number) {
+            args.push_back(std::make_unique<NumberExprAST>(NumVal));
+        } else if (nextFlag == tok_identifier) {
+            std::string nestedCallee = IdentifierStr;
+            int nestedFlag = getNextToken();
+            if (nestedFlag == '(') {
+                args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+            } else {
+                args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
+            }
+        } else {
+            throw std::runtime_error("Unexpected token in nested call");
+        }
+    }
+    return args;
+}
 Status CreateTree() {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
-
+    int ch_flag;
     int flag = getNextToken();
     if (flag == tok_identifier) {
-        // 检查标识符后是否跟随数字
+        // 检查标识符后是否跟随 '('
         std::string callee = IdentifierStr;
         int nextFlag = getNextToken();
-        if (nextFlag == tok_number) {
-            // 解析函数调用
+        ch_flag = nextFlag;
+        if (nextFlag == '(') {
+            // 解析函数调用（包括嵌套调用）
             std::vector<std::unique_ptr<ExprAST>> args;
-            args.push_back(std::make_unique<NumberExprAST>(NumVal));
 
-            // 继续解析后续参数
-            while ((nextFlag = getNextToken()) == tok_number) {
-                args.push_back(std::make_unique<NumberExprAST>(NumVal));
+            while ((nextFlag = getNextToken()) != ')') {
+                if (nextFlag == tok_number) {
+                    args.push_back(std::make_unique<NumberExprAST>(NumVal));
+                } else if (nextFlag == tok_identifier) {
+                    // 递归解析嵌套函数调用
+                    std::string nestedCallee = IdentifierStr;
+                    int nestedFlag = getNextToken();
+                    if (nestedFlag == '(') {
+                        // 嵌套函数调用
+                        args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                    } else {
+                        args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
+                    }
+                } else {
+                    return ERROR; // 非法标记
+                }
             }
 
             // 将函数调用节点压入操作数栈
@@ -55,26 +82,37 @@ Status CreateTree() {
         }
     } else if (flag == tok_number) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
+        ch_flag = getNextToken(); // 获取下一个标记
     } else {
         return ERROR;
     }
 
-    int ch_flag = getNextToken(); // 获取下一个标记
     while (ch_flag != ';') {
         if (ch_flag == tok_number) {
             operands.push(std::make_unique<NumberExprAST>(NumVal));
+            ch_flag = getNextToken();
         } else if (ch_flag == tok_identifier) {
             std::string callee = IdentifierStr;
             int nextFlag = getNextToken();
-            if (nextFlag == tok_number) {
-                // 解析函数调用
+            ch_flag = nextFlag;
+            if (nextFlag == '(') {
+                // 函数调用
                 std::vector<std::unique_ptr<ExprAST>> args;
-                args.push_back(std::make_unique<NumberExprAST>(NumVal));
-
-                while ((nextFlag = getNextToken()) == tok_number) {
-                    args.push_back(std::make_unique<NumberExprAST>(NumVal));
+                while ((nextFlag = getNextToken()) != ')') {
+                    if (nextFlag == tok_number) {
+                        args.push_back(std::make_unique<NumberExprAST>(NumVal));
+                    } else if (nextFlag == tok_identifier) {
+                        std::string nestedCallee = IdentifierStr;
+                        int nestedFlag = getNextToken();
+                        if (nestedFlag == '(') {
+                            args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                        } else {
+                            args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
+                        }
+                    } else {
+                        return ERROR;
+                    }
                 }
-
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
             } else {
                 operands.push(std::make_unique<VariableExprAST>(callee));
@@ -154,6 +192,7 @@ Status CreateTree() {
         operands.pop();
         // 此处可以返回或存储根节点
     }
-
     return OK;
 }
+
+
