@@ -1,3 +1,6 @@
+#ifndef AST_H
+#define AST_H
+
 #include <string>
 #include <memory>
 
@@ -98,10 +101,8 @@ class PrototypeAST {
   std::vector<std::string> Args;
 
 public:
-  PrototypeAST(const std::string &Name, std::vector<std::string> Args,
-               bool IsOperator = false, unsigned Prec = 0)
-      : Name(Name), Args(std::move(Args)), IsOperator(IsOperator),
-        Precedence(Prec) {}
+  PrototypeAST(const std::string &Name, std::vector<std::string> Args)
+      : Name(Name), Args(std::move(Args)){}
 
   void codegen();
 
@@ -119,3 +120,5 @@ public:
 
   void codegen();
 };
+
+#endif

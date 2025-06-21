@@ -1,5 +1,13 @@
 # cumtber
 parser
+
+2025.6.21
+所有建树返回的跟节点如果解析失败就return nullptr;
+
+
+
+
+
 说明:
 getNextToken函数执行后会把token写入CurTok
 getNextToken是会消耗token的，如果想要跳过 token也可以调用函数来实现
@@ -43,3 +51,4 @@ mkdir build
 cd build
 cmake ..
 make
+
