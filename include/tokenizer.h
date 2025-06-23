@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
 
 static std::string IdentifierStr; // Filled in if tok_identifier
 static double NumVal;             // Filled in if tok_number
@@ -77,7 +76,7 @@ static int CurTok;
 static int getNextToken() { return CurTok = gettok(); }
 
 
-static std::map<char, int> BinopPrecedence;
+static std::map<char, int> BinopPrecedence;//   +-*/ = 10 10 20 20 
 
 static int GetTokPrecedence() {
   if (!isascii(CurTok))
