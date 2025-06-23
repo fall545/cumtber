@@ -4,11 +4,7 @@
 #include <string>
 #include <memory>
 
-typedef int Status;
-enum {
-    ERROR,
-    OK
-};
+
 
 /// ExprAST - Base class for all expression nodes.
 class ExprAST {
@@ -37,7 +33,7 @@ public:
   VariableExprAST(const std::string &Name) : Name(Name) {}
   
   std::string getName() const {return Name;}
-  void codegen() override {;};
+  void codegen();
 };
 
 /// UnaryExprAST - Expression class for a unary operator.

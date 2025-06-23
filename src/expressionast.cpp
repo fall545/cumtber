@@ -3,6 +3,11 @@
 #include <stack>
 #include "parser.h"
 #include <iostream>
+typedef int Status;
+enum {
+    ERROR,
+    OK
+};
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
     else if (a != '#' && b == '#') return '>';

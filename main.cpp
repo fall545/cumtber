@@ -3,6 +3,7 @@
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto FnAST = ParseTopLevelExpr()) {
+    FnAST->codegen()
     fprintf(stderr, "Read ParseTopLevelExpr");
       fprintf(stderr, "\n");
   } else {
@@ -12,6 +13,7 @@ static void HandleTopLevelExpression() {
 }
 static void HandleDefinition() {
   if (auto FnAST = ParseDefinition()) {
+      FnAST->codegen()
       fprintf(stderr, "Read function definition:");
       fprintf(stderr, "\n");
   } else {
