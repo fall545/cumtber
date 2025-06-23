@@ -4,12 +4,19 @@
 #include <string>
 #include <memory>
 
+typedef int Status;
+enum {
+    ERROR,
+    OK
+};
+
 /// ExprAST - Base class for all expression nodes.
 class ExprAST {
 public:
   virtual ~ExprAST() = default;
-
-  virtual void codegen() = 0;
+  
+  virtual std::string getName() const {return "";};
+  virtual void codegen();
 };
 
 /// NumberExprAST - Expression class for numeric literals like "1.0".
@@ -18,8 +25,8 @@ class NumberExprAST : public ExprAST {
 
 public:
   NumberExprAST(double Val) : Val(Val) {}
-
-  void codegen() override;
+  double getValue() const {return Val;};
+  void codegen();
 };
 
 /// VariableExprAST - Expression class for referencing a variable, like "a".
@@ -28,23 +35,24 @@ class VariableExprAST : public ExprAST {
 
 public:
   VariableExprAST(const std::string &Name) : Name(Name) {}
-
-  void codegen() override;
+  
+  std::string getName() const {return Name;}
+  void codegen() override {;};
 };
 
 /// UnaryExprAST - Expression class for a unary operator.
-class UnaryExprAST : public ExprAST {
-  char Opcode;
-  std::unique_ptr<ExprAST> Operand;
+// class UnaryExprAST : public ExprAST {
+//   char Opcode;
+//   std::unique_ptr<ExprAST> Operand;
 
-public:
-  UnaryExprAST(char Opcode, std::unique_ptr<ExprAST> Operand)
-      : Opcode(Opcode), Operand(std::move(Operand)) {}
+// public:
+//   UnaryExprAST(char Opcode, std::unique_ptr<ExprAST> Operand)
+//       : Opcode(Opcode), Operand(std::move(Operand)) {}
 
-  void codegen() override;
-};
+//   void codegen() override;
+// };
 
-/// BinaryExprAST - Expression class for a binary operator.
+// BinaryExprAST - Expression class for a binary operator.
 class BinaryExprAST : public ExprAST {
   char Op;
   std::unique_ptr<ExprAST> LHS, RHS;
@@ -53,8 +61,12 @@ public:
   BinaryExprAST(char Op, std::unique_ptr<ExprAST> LHS,
                 std::unique_ptr<ExprAST> RHS)
       : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
-
-  void codegen() override;
+  
+  std::string getName() const {return std::string(1, Op);};
+  const std::unique_ptr<ExprAST>& getLHS() const { return LHS; };
+  const std::unique_ptr<ExprAST>& getRHS() const { return RHS; };
+  char getOp() const {return Op;};
+  void codegen();
 };
 
 /// CallExprAST - Expression class for function calls.
@@ -66,8 +78,9 @@ public:
   CallExprAST(const std::string &Callee,
               std::vector<std::unique_ptr<ExprAST>> Args)
       : Callee(Callee), Args(std::move(Args)) {}
-
-  void codegen() override;
+  std::string getCallee() const {return Callee;};
+  const std::vector<std::unique_ptr<ExprAST>>& getArgs() const {return Args;};
+  void codegen();
 };
 
 /// IfExprAST - Expression class for if/then/else.
@@ -79,7 +92,7 @@ public:
             std::unique_ptr<ExprAST> Else)
       : Cond(std::move(Cond)), Then(std::move(Then)), Else(std::move(Else)) {}
 
-  void codegen() override;
+  void codegen();
 };
 
 /// WhileExprAST - Expression class for for/in.
@@ -90,15 +103,17 @@ public:
   WhileExprAST(std::unique_ptr<ExprAST> Cond,std::unique_ptr<ExprAST> Body)
       : Cond(std::move(Cond)) , Body(std::move(Body)) {}
 
-  void codegen() override;
+  void codegen();
 };
 
-/// PrototypeAST - This class represents the "prototype" for a function,
-/// which captures its name, and its argument names (thus implicitly the number
-/// of arguments the function takes), as well as if it is an operator.
+// PrototypeAST - This class represents the "prototype" for a function,
+// which captures its name, and its argument names (thus implicitly the number
+// of arguments the function takes), as well as if it is an operator.
 class PrototypeAST {
   std::string Name;
   std::vector<std::string> Args;
+  bool IsOperator;
+  unsigned Precedence;
 
 public:
   PrototypeAST(const std::string &Name, std::vector<std::string> Args)
@@ -108,7 +123,7 @@ public:
 
 };
 
-/// FunctionAST - This class represents a function definition itself.
+// FunctionAST - This class represents a function definition itself.
 class FunctionAST {
   std::unique_ptr<PrototypeAST> Proto;
   std::unique_ptr<ExprAST> Body;

@@ -2,7 +2,7 @@
 #include "ast.h"
 #include <stack>
 #include "parser.h"
-
+#include <iostream>
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
     else if (a != '#' && b == '#') return '>';
