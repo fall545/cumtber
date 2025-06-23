@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 #include "ast.h"
 #include <stack>
+#include "parser.h"
 
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
@@ -52,7 +53,7 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
  * @param r Reference to an ExprAST object where the resulting AST will be stored.
  * @return Status OK if the tree is successfully created, ERROR if an invalid token is encountered.
  */
-Status CreateTree(std::unique_ptr<ExprAST>& r) {
+static std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
@@ -81,7 +82,7 @@ Status CreateTree(std::unique_ptr<ExprAST>& r) {
                     // 跳过逗号，继续解析下一个参数
                     continue;
                 } else {
-                    return ERROR;
+                    throw std::runtime_error("Unexpected token in function call");
                 }
             }
             // 将函数调用节点压入操作数栈
@@ -95,7 +96,7 @@ Status CreateTree(std::unique_ptr<ExprAST>& r) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
         ch_flag = getNextToken(); // 获取下一个标记
     } else {
-        return ERROR;
+        throw std::runtime_error("Unexpected token at the beginning of expression");
     }
 
     while (ch_flag != ';') {
@@ -120,8 +121,11 @@ Status CreateTree(std::unique_ptr<ExprAST>& r) {
                         } else {
                             args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
                         }
+                    } else if (nextFlag == ',') {
+                        // 跳过逗号，继续解析下一个参数
+                        continue;
                     } else {
-                        return ERROR;
+                        throw std::runtime_error("Unexpected token in function call");
                     }
                 }
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
@@ -199,11 +203,9 @@ Status CreateTree(std::unique_ptr<ExprAST>& r) {
 
     // 最终的 AST 根节点
     if (!operands.empty()) {
-        auto root = std::move(operands.top());
-        operands.pop();
-        r = std::move(root);
+        return std::move(operands.top());
     }
-    return OK;
+    throw std::runtime_error("Failed to parse expression");
 }
 
 Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
