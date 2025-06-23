@@ -2,8 +2,8 @@
 #include "parser.h"
 
 //变量为tok_identifier,解析Args
-static std::vector<string> ParseArgs() {
-    std::vector<string> Args;
+static std::vector<std::string> ParseArgs() {
+    std::vector<std::string> Args;
     while (CurTok == tok_identifier) {
         Args.push_back(IdentifierStr);
         getNextToken();
