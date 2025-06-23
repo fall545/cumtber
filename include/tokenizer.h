@@ -20,7 +20,10 @@ enum{
   tok_extern = -3,
 
   tok_identifier = -4,
-  tok_number = -5
+  tok_number = -5,
+  tok_if = -6,
+  tok_else = -7,
+  tok_while = -8
 };
 static int gettok() {
   static int LastChar = ' ';

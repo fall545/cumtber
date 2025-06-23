@@ -3,14 +3,12 @@
 
 #include <string>
 #include <memory>
-
-
+#include <vector>
 
 /// ExprAST - Base class for all expression nodes.
 class ExprAST {
 public:
   virtual ~ExprAST() = default;
-  
   virtual std::string getName() const {return "";};
   virtual void codegen();
 };
@@ -31,7 +29,6 @@ class VariableExprAST : public ExprAST {
 
 public:
   VariableExprAST(const std::string &Name) : Name(Name) {}
-  
   std::string getName() const {return Name;}
   void codegen();
 };
@@ -57,7 +54,6 @@ public:
   BinaryExprAST(char Op, std::unique_ptr<ExprAST> LHS,
                 std::unique_ptr<ExprAST> RHS)
       : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
-  
   std::string getName() const {return std::string(1, Op);};
   const std::unique_ptr<ExprAST>& getLHS() const { return LHS; };
   const std::unique_ptr<ExprAST>& getRHS() const { return RHS; };
