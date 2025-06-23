@@ -1,3 +1,5 @@
+#ifndef TOKENIZER_H
+#define TOKENIZER_H
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -92,3 +94,4 @@ static int GetTokPrecedence() {
     return -1;
   return TokPrec;
 }
+#endif

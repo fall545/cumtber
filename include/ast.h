@@ -1,3 +1,6 @@
+#ifndef AST_H
+#define AST_H
+
 #include <string>
 #include <memory>
 
@@ -113,10 +116,8 @@ class PrototypeAST {
   unsigned Precedence;
 
 public:
-  PrototypeAST(const std::string &Name, std::vector<std::string> Args,
-               bool IsOperator = false, unsigned Prec = 0)
-      : Name(Name), Args(std::move(Args)), IsOperator(IsOperator),
-        Precedence(Prec) {}
+  PrototypeAST(const std::string &Name, std::vector<std::string> Args)
+      : Name(Name), Args(std::move(Args)){}
 
   void codegen();
 
@@ -135,5 +136,4 @@ public:
   void codegen();
 };
 
-Status CreateTree(std::unique_ptr<ExprAST>& r);
-Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node);
+#endif
