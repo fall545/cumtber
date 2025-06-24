@@ -1,0 +1,6 @@
+# 测试 if/else 判断
+if 1 { 100 } else { 200 }
+
+if 0 { 10 } else { 20 }
+
+if x { y } else { z } 

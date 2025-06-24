@@ -1,0 +1,6 @@
+# 测试 while 循环
+while 0 { 123 }
+
+while 1 { 456; }
+
+while x { y } 
