@@ -48,6 +48,21 @@
         "unordered_map": "cpp",
         "variant": "cpp",
         "vector": "cpp",
-        "cassert": "cpp"
-    }
+        "cassert": "cpp",
+        "atomic": "cpp",
+        "*.tcc": "cpp",
+        "cstddef": "cpp",
+        "exception": "cpp",
+        "memory_resource": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
+    },
+    "makefile.makefilePath": "${workspaceFolder}/build",
+    "cmake.generator": "",
+    "makefile.makePath": "mingw32-make",
 }
