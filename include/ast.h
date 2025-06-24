@@ -10,9 +10,8 @@
 class ExprAST {
 public:
   virtual ~ExprAST() = default;
-  
   virtual std::string getName() const {return "";};
-  virtual void codegen();
+  virtual std::string codegen();
 };
 
 /// NumberExprAST - Expression class for numeric literals like "1.0".
@@ -22,7 +21,7 @@ class NumberExprAST : public ExprAST {
 public:
   NumberExprAST(double Val) : Val(Val) {}
   double getValue() const {return Val;};
-  void codegen();
+  std::string codegen();
 };
 
 /// VariableExprAST - Expression class for referencing a variable, like "a".
@@ -33,7 +32,7 @@ public:
   VariableExprAST(const std::string &Name) : Name(Name) {}
   
   std::string getName() const {return Name;}
-  void codegen();
+  std::string codegen();
 };
 
 /// UnaryExprAST - Expression class for a unary operator.
@@ -62,7 +61,7 @@ public:
   const std::unique_ptr<ExprAST>& getLHS() const { return LHS; };
   const std::unique_ptr<ExprAST>& getRHS() const { return RHS; };
   char getOp() const {return Op;};
-  void codegen();
+  std::string codegen();
 };
 
 /// CallExprAST - Expression class for function calls.
@@ -76,7 +75,7 @@ public:
       : Callee(Callee), Args(std::move(Args)) {}
   std::string getCallee() const {return Callee;};
   const std::vector<std::unique_ptr<ExprAST>>& getArgs() const {return Args;};
-  void codegen();
+  std::string codegen();
 };
 
 /// IfExprAST - Expression class for if/then/else.
@@ -88,7 +87,7 @@ public:
             std::unique_ptr<ExprAST> Else)
       : Cond(std::move(Cond)), Then(std::move(Then)), Else(std::move(Else)) {}
 
-  void codegen();
+  std::string codegen();
 };
 
 /// WhileExprAST - Expression class for for/in.
@@ -99,7 +98,7 @@ public:
   WhileExprAST(std::unique_ptr<ExprAST> Cond,std::unique_ptr<ExprAST> Body)
       : Cond(std::move(Cond)) , Body(std::move(Body)) {}
 
-  void codegen();
+  std::string codegen();
 };
 
 // PrototypeAST - This class represents the "prototype" for a function,
@@ -115,7 +114,7 @@ public:
   PrototypeAST(const std::string &Name, std::vector<std::string> Args)
       : Name(Name), Args(std::move(Args)){}
 
-  void codegen();
+  std::string codegen();
 
 };
 
@@ -129,7 +128,7 @@ public:
               std::unique_ptr<ExprAST> Body)
       : Proto(std::move(Proto)), Body(std::move(Body)) {}
 
-  void codegen();
+  std::string codegen();
 };
 
 #endif

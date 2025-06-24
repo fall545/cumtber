@@ -1,6 +1,19 @@
 # cumtber
 parser
 
+2025.6.24
+codegen写法规范,注意类外定义,别再动别人要动的文件了
+std::string codegen(){
+    auto info.= expr->codegen;
+    .....
+    ....
+    auto info2.= expr2->codegen;
+
+    return ".......info1.....info2.....";
+
+}
+
+
 2025.6.21
 所有建树返回的跟节点如果解析失败就return nullptr;
 
