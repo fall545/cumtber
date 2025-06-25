@@ -1,9 +1,9 @@
+#include <vector>
 #include "../include/ast.h"
 #include "../include/tokenizer.h"
 #include "../include/parser.h"
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -16,34 +16,51 @@ ExprASTPtr ParseIfExpr();
 ExprASTPtr ParseWhileExpr();
 
 // ========== ExprAST vtable/typeinfo fix ==========
-void ExprAST::codegen() {}
+std::string ExprAST::codegen() { return ""; }
 
 
 // ========== ast.cpp 部分 ==========
-void NumberExprAST::codegen() {
+std::string NumberExprAST::codegen() {
     std::cout << "NumberExprAST::codegen() - Value: " << getValue() << std::endl;
+    return std::to_string(getValue());
 }
-void VariableExprAST::codegen() {
+std::string VariableExprAST::codegen() {
     std::cout << "VariableExprAST::codegen() - Name: " << getName() << std::endl;
+    return getName();
 }
-void CallExprAST::codegen() {
+std::string CallExprAST::codegen() {
     std::cout << "CallExprAST::codegen() - Function: " << getCallee() << std::endl;
     for (const auto& arg : getArgs()) {
         if (arg) {
             arg->codegen();
         }
     }
+    return "";
 }
-void IfExprAST::codegen() {
+std::string IfExprAST::codegen() {
     std::cout << "IfExprAST::codegen()" << std::endl;
+    if (Cond && Then && Else) {
+        std::string condResult = Cond->codegen();
+        std::string thenResult = Then->codegen();
+        std::string elseResult = Else->codegen();
+        return "if(" + condResult + "){" + thenResult + "}else{" + elseResult + "}";
+    }
+    return "";
 }
-void WhileExprAST::codegen() {
+std::string WhileExprAST::codegen() {
     std::cout << "WhileExprAST::codegen()" << std::endl;
+    if (Cond && Body) {
+        std::string condResult = Cond->codegen();
+        std::string bodyResult = Body->codegen();
+        return "while(" + condResult + "){" + bodyResult + "}";
+    }
+    return "";
 }
-void PrototypeAST::codegen() {
+std::string PrototypeAST::codegen() {
     std::cout << "PrototypeAST::codegen() - Function: " << Name << std::endl;
+    return "";
 }
-void FunctionAST::codegen() {
+std::string FunctionAST::codegen() {
     std::cout << "FunctionAST::codegen()" << std::endl;
     if (Proto) {
         Proto->codegen();
@@ -51,6 +68,7 @@ void FunctionAST::codegen() {
     if (Body) {
         Body->codegen();
     }
+    return "";
 }
 
 // ========== loopast.cpp (parser) 部分 ==========
