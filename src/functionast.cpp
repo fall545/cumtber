@@ -1,9 +1,9 @@
 #include "tokenizer.h"
 #include "parser.h"
 
-//变量为tok_identifier,解析Args
-static std::vector<string> ParseArgs() {
-    std::vector<string> Args;
+//鍙橀噺涓簍ok_identifier,瑙ｆ瀽Args
+static std::vector<std::string> ParseArgs() {
+    std::vector<std::string> Args;
     while (CurTok == tok_identifier) {
         Args.push_back(IdentifierStr);
         getNextToken();
@@ -13,26 +13,29 @@ static std::vector<string> ParseArgs() {
     return Args;
 }
 
-//解析函数体
-static std::unique_ptr<ExprAST> ParseBody() {
-    if (CurTok != '{') {
-        return nullptr;
-    }
-    getNextToken(); //舍掉{
-    auto Body = ParseExpression();
-    if (!Body) {
-        return nullptr;
-    }
+//瑙ｆ瀽鍑芥暟浣?
+static std::unique_ptr<BlockExprAST> ParseBody() {
+    if (CurTok != '{') return nullptr;
+    getNextToken(); // 璺宠繃{    
+    std::vector<std::unique_ptr<ExprAST>> Stmts;
+    while (CurTok != '}') {
+        std::unique_ptr<ExprAST> Stmt;
+        
+        // 浼樺厛灏濊瘯瑙ｆ瀽鎺у埗娴佽鍙?
+        if (CurTok == tok_if) {
+            Stmt = ParseIfExpr();
+        } else if (CurTok == tok_while) {
+            Stmt = ParseWhileExpr();
+        } else {
+            Stmt = ParseExpression();
+        }
 
-    if (CurTok != ';') {
-        return nullptr;
+        if (!Stmt) return nullptr;
+        
+        Stmts.push_back(std::move(Stmt));
     }
-    getNextToken();
-    if (CurTok != '}') {
-        return nullptr;
-    }
-    getNextToken();
-    return Body;
+    getNextToken(); // 璺宠繃}
+    return std::make_unique<BlockExprAST>(std::move(Stmts));
 }
 
 static std::unique_ptr<PrototypeAST> ParsePrototype(){
@@ -63,7 +66,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     std::string FnName = IdentifierStr;
     getNextToken();
     auto Args = ParseArgs();
-    std::unique_ptr<ExprAST> Body = nullptr;
+    std::unique_ptr<BlockExprAST> Body = nullptr;
     if (CurTok == '{') {
         Body = ParseBody(); //deg f a,b {}
     } else {
@@ -71,4 +74,34 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     }
     auto Proto = std::make_unique<PrototypeAST>(FnName, std::move(Args));
     return std::make_unique<FunctionAST>(std::move(Proto), std::move(Body));
+}
+
+std::string PrototypeAST::codegen() {
+    std::string info ="鏈嚱鏁?+Name+"鍙傛暟涓?";
+    for (size_t i = 0; i < Args.size(); ++i) {
+        if (i > 0) {
+            info += ", ";
+        }
+        info += Args[i];
+    }
+    info +="\n";
+    return info;
+}
+
+std::string FunctionAST::codegen() {
+    std::string info = Proto->codegen() + " {\n";
+    if (Body) {
+        if (auto* block = dynamic_cast<BlockExprAST*>(Body.get())) {
+            for (auto& stmt : block->getStmts()) {
+                info += "    " + stmt->codegen();
+                if (!dynamic_cast<IfExprAST*>(stmt.get()) && 
+                    !dynamic_cast<WhileExprAST*>(stmt.get())) {
+                    info += ";";
+                }
+                info += "\n";
+            }
+        }
+    }
+    info += "}\n";
+    return info;
 }
