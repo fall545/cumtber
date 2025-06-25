@@ -1,7 +1,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 
-//鍙橀噺涓簍ok_identifier,瑙ｆ瀽Args
+//变量为tok_identifier,解析Args
 static std::vector<std::string> ParseArgs() {
     std::vector<std::string> Args;
     while (CurTok == tok_identifier) {
@@ -13,15 +13,14 @@ static std::vector<std::string> ParseArgs() {
     return Args;
 }
 
-//瑙ｆ瀽鍑芥暟浣?
+//parse FuncBody
 static std::unique_ptr<BlockExprAST> ParseBody() {
     if (CurTok != '{') return nullptr;
-    getNextToken(); // 璺宠繃{    
+    getNextToken();    
     std::vector<std::unique_ptr<ExprAST>> Stmts;
     while (CurTok != '}') {
         std::unique_ptr<ExprAST> Stmt;
         
-        // 浼樺厛灏濊瘯瑙ｆ瀽鎺у埗娴佽鍙?
         if (CurTok == tok_if) {
             Stmt = ParseIfExpr();
         } else if (CurTok == tok_while) {
@@ -34,7 +33,7 @@ static std::unique_ptr<BlockExprAST> ParseBody() {
         
         Stmts.push_back(std::move(Stmt));
     }
-    getNextToken(); // 璺宠繃}
+    getNextToken(); 
     return std::make_unique<BlockExprAST>(std::move(Stmts));
 }
 
@@ -77,7 +76,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
 }
 
 std::string PrototypeAST::codegen() {
-    std::string info ="鏈嚱鏁?+Name+"鍙傛暟涓?";
+    std::string info = "This is Func" + Name + "with Args:";
     for (size_t i = 0; i < Args.size(); ++i) {
         if (i > 0) {
             info += ", ";
