@@ -253,3 +253,30 @@ Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
     return OK;
 }
 
+void NumberExprAST::codegen() {
+    std::cout << "Number: " << Val << std::endl;
+}
+
+void VariableExprAST::codegen() {
+    std::cout << "Variable: " << Name << std::endl;
+}
+
+void BinaryExprAST::codegen() {
+    std::cout << "Binary Operation: " << Op << std::endl;
+    std::cout << "Left-hand side: ";
+    LHS->codegen();
+    std::cout << "Right-hand side: ";
+    RHS->codegen();
+}
+
+void CallExprAST::codegen() {
+    std::cout << "Function Call: " << Callee << std::endl;
+    std::cout << "Arguments: ";
+    for (const auto& arg : Args) {
+        arg->codegen();
+    }
+}
+
+void ExprAST::codegen() {
+    ;
+}
