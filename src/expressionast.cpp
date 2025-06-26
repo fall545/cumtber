@@ -253,30 +253,33 @@ Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
     return OK;
 }
 
-void NumberExprAST::codegen() {
-    std::cout << "Number: " << Val << std::endl;
+std::string NumberExprAST::codegen() {
+    return "Number: " + std::to_string(Val);
 }
 
-void VariableExprAST::codegen() {
-    std::cout << "Variable: " << Name << std::endl;
+std::string VariableExprAST::codegen() {
+    return "Variable: " + Name;
 }
 
-void BinaryExprAST::codegen() {
-    std::cout << "Binary Operation: " << Op << std::endl;
-    std::cout << "Left-hand side: ";
-    LHS->codegen();
-    std::cout << "Right-hand side: ";
-    RHS->codegen();
+std::string BinaryExprAST::codegen() {
+    std::string result = "Binary Operation: " + std::string(1, Op) + "\n";
+    result += "Left-hand side: " + LHS->codegen() + "\n";
+    result += "Right-hand side: " + RHS->codegen() + "\n";
+    return result;
 }
 
-void CallExprAST::codegen() {
-    std::cout << "Function Call: " << Callee << std::endl;
-    std::cout << "Arguments: ";
+std::string CallExprAST::codegen() {
+    std::string result = "Function Call: " + Callee + "\nArguments: ";
     for (const auto& arg : Args) {
-        arg->codegen();
+        result += arg->codegen() + ", ";
     }
+    if (!Args.empty()) {
+        result.pop_back(); // Remove trailing comma
+        result.pop_back(); // Remove trailing space
+    }
+    return result;
 }
 
-void ExprAST::codegen() {
-    ;
+std::string ExprAST::codegen() {
+    return "";
 }
