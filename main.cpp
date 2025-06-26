@@ -3,9 +3,9 @@
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto FnAST = ParseTopLevelExpr()) {
-    FnAST->codegen();
-    fprintf(stderr, "Read ParseTopLevelExpr");
-      fprintf(stderr, "\n");
+    auto info = FnAST->codegen();
+    fprintf(stderr, "Read ParseTopLevelExpr\n");
+    cout<<info<<"\nParseTopLevelExpr end\n";
   } else {
     // Skip token for error recovery.
     getNextToken();
@@ -13,9 +13,9 @@ static void HandleTopLevelExpression() {
 }
 static void HandleDefinition() {
   if (auto FnAST = ParseDefinition()) {
-      FnAST->codegen();
-      fprintf(stderr, "Read function definition:");
-      fprintf(stderr, "\n");
+      auto info = FnAST->codegen();
+      fprintf(stderr, "Read function definition:\n");
+      cout<<info<<"\nfunction definition end\n";
   } else {
     // Skip token for error recovery.
     getNextToken();
