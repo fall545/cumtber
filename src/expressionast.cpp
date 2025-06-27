@@ -253,3 +253,33 @@ Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
     return OK;
 }
 
+std::string NumberExprAST::codegen() {
+    return "Number: " + std::to_string(Val);
+}
+
+std::string VariableExprAST::codegen() {
+    return "Variable: " + Name;
+}
+
+std::string BinaryExprAST::codegen() {
+    std::string result = "Binary Operation: " + std::string(1, Op) + "\n";
+    result += "Left-hand side: " + LHS->codegen() + "\n";
+    result += "Right-hand side: " + RHS->codegen() + "\n";
+    return result;
+}
+
+std::string CallExprAST::codegen() {
+    std::string result = "Function Call: " + Callee + "\nArguments: ";
+    for (const auto& arg : Args) {
+        result += arg->codegen() + ", ";
+    }
+    if (!Args.empty()) {
+        result.pop_back(); // Remove trailing comma
+        result.pop_back(); // Remove trailing space
+    }
+    return result;
+}
+
+std::string ExprAST::codegen() {
+    return "";
+}
