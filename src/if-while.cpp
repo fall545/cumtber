@@ -8,28 +8,11 @@
 #include <cstdlib>
 #include <string>
 
-// ========== 必要的虚函数实现 ==========
-std::string ExprAST::codegen() {
-    return "";
-}
-
 // ========== 简化的AST节点实现 ==========
 std::string IfExprAST::codegen() {
     std::cout << "IfExprAST::codegen()" << std::endl;
     if (Cond && Then && Else) {
-        // 根据条件类型返回相应的字符串
-        std::string condResult;
-        if (auto* numExpr = dynamic_cast<NumberExprAST*>(Cond.get())) {
-            // 如果是数字，返回数字对应的字符串
-            condResult = std::to_string(numExpr->getValue());
-        } else if (auto* varExpr = dynamic_cast<VariableExprAST*>(Cond.get())) {
-            // 如果是字符(变量)，返回字符名
-            condResult = varExpr->getName();
-        } else {
-            // 其他情况，使用默认codegen
-            condResult = Cond->codegen();
-        }
-        
+        std::string condResult = Cond->codegen();
         std::string thenResult = Then->codegen();
         std::string elseResult = Else->codegen();
         return "if(" + condResult + "){" + thenResult + "}else{" + elseResult + "}";
@@ -45,6 +28,26 @@ std::string WhileExprAST::codegen() {
         return "while(" + condResult + "){" + bodyResult + "}";
     }
     return "";
+}
+
+std::string BlockExprAST::codegen() {
+    std::string result;
+    for (const auto& stmt : getStmts()) {
+        if (stmt) result += stmt->codegen() + ";\n";
+    }
+    return result;
+}
+
+// ParseTopLevelExpr实现
+std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
+    if (auto E = ParseExpression()) {
+        std::unique_ptr<PrototypeAST> Proto(new PrototypeAST("__anon_expr", std::vector<std::string>()));
+        std::vector<std::unique_ptr<ExprAST> > stmts;
+        stmts.push_back(std::move(E));
+        std::unique_ptr<BlockExprAST> Body(new BlockExprAST(std::move(stmts)));
+        return std::unique_ptr<FunctionAST>(new FunctionAST(std::move(Proto), std::move(Body)));
+    }
+    return nullptr;
 }
 
 // ========== 简化的解析器 ==========
@@ -137,24 +140,5 @@ std::unique_ptr<ExprAST> ParseWhileExpr() {
 //     return nullptr; 
 // }
 
-// BlockExprAST codegen实现
-std::string BlockExprAST::codegen() {
-    std::string result;
-    for (const auto& stmt : getStmts()) {
-        if (stmt) result += stmt->codegen() + ";\n";
-    }
-    return result;
-}
 
-// ParseTopLevelExpr实现
-std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
-    if (auto E = ParseExpression()) {
-        // 创建一个匿名函数来包装顶层表达式
-        std::unique_ptr<PrototypeAST> Proto(new PrototypeAST("__anon_expr", std::vector<std::string>()));
-        std::vector<std::unique_ptr<ExprAST> > stmts;
-        stmts.push_back(std::move(E));
-        std::unique_ptr<BlockExprAST> Body(new BlockExprAST(std::move(stmts)) );
-        return std::unique_ptr<FunctionAST>(new FunctionAST(std::move(Proto), std::move(Body)));
-    }
-    return nullptr;
-}
+
