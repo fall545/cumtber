@@ -8,6 +8,16 @@
 #include <cstdlib>
 #include <string>
 
+// ========== 规范化错误处理 ==========
+void syntaxerror(const std::string& message) {
+    std::cerr << "Syntax Error: " << message << std::endl;
+}
+
+std::unique_ptr<ExprAST> LogError(const char *Str) {
+    syntaxerror(std::string(Str));
+    return nullptr;
+}
+
 // ========== 简化的AST节点实现 ==========
 std::string IfExprAST::codegen() {
     std::cout << "IfExprAST::codegen()" << std::endl;
@@ -43,11 +53,6 @@ std::string WhileExprAST::codegen() {
 }
 
 // ========== 简化的解析器 ==========
-std::unique_ptr<ExprAST> LogError(const char *Str) {
-    fprintf(stderr, "Error: %s\n", Str);
-    return nullptr;
-}
-
 // 简化的数字解析 - 只支持简单数字
 std::unique_ptr<ExprAST> ParseNumberExpr() {
     auto Result = std::unique_ptr<NumberExprAST>(new NumberExprAST(NumVal));
@@ -73,7 +78,8 @@ std::unique_ptr<ExprAST> ParsePrimary() {
             return ParseWhileExpr();
         } else if (IdentifierStr == "else") {
             // else一般在if内部处理，这里直接报错
-            return LogError("unexpected 'else'");
+            syntaxerror("unexpected 'else' , 'else' should be inside if statement");
+            return nullptr;
         } else {
             // 简单变量名
             return ParseIdentifierExpr();
@@ -82,7 +88,8 @@ std::unique_ptr<ExprAST> ParsePrimary() {
         // 简单数字
         return ParseNumberExpr();
     } else {
-        return LogError("unknown token when expecting an expression");
+        syntaxerror("unknown token , expected identifier or number");
+        return nullptr;
     }
 }
 
@@ -98,8 +105,10 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     if (!Then) return nullptr;
     
     // 检查else
-    if (!(CurTok == tok_identifier && IdentifierStr == "else"))
-        return LogError("expected 'else'");
+    if (!(CurTok == tok_identifier && IdentifierStr == "else")) {
+        syntaxerror("if statement , missing 'else' keyword");
+        return nullptr;
+    }
     getNextToken(); // 跳过else
     
     // 解析else分支（单个变量或数字）
