@@ -14,9 +14,9 @@ static std::vector<std::string> ParseArgs() {
 }
 
 //parse FuncBody
-static std::unique_ptr<BlockExprAST> ParseBody() {
+static std::unique_ptr<ExprAST> ParseBody() {
     if (CurTok != '{') {
-        syntaxerror(string(function body error , missing "{"));
+        syntaxerror(string("function body error , missing \"{\""));
         return nullptr;
     }
     getNextToken();    
@@ -24,7 +24,7 @@ static std::unique_ptr<BlockExprAST> ParseBody() {
     if (CurTok != '}') {
         Stmts = ParseExpression();
     }else {
-        syntaxerror(string(function body error , missing "}"));
+        syntaxerror(string("function body error , missing \"}\""));
         return nullptr;
     }
     getNextToken(); 
@@ -33,12 +33,12 @@ static std::unique_ptr<BlockExprAST> ParseBody() {
 
 static std::unique_ptr<PrototypeAST> ParsePrototype(){
     if (CurTok != tok_def) {
-        syntaxerror(string(function definition error , missing "def"));
+        syntaxerror(string("function definition error , missing \"def\""));
         return nullptr;
     }
     getNextToken();
     if (CurTok != tok_identifier) {
-        syntaxerror(string(function name error , using identifier));
+        syntaxerror(string("function name error , using identifier"));
         return nullptr;
     }
     std::string FnName = IdentifierStr;
@@ -47,7 +47,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
     if (CurTok == ';') {
         getNextToken(); //def f a,b;
     }else{
-        syntaxerror(string(function prototype error , not using ";"));
+        syntaxerror(string("function prototype error , not using \";\""));
         return nullptr;
     }
     return std::make_unique<PrototypeAST>(FnName, move(Args));
@@ -55,12 +55,12 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
 
 static std::unique_ptr<FunctionAST> ParseDefinition(){
     if (CurTok != tok_def) {
-        syntaxerror(string(function definition error , missing "def"));
+        syntaxerror(string("function definition error , missing \"def\""));
         return nullptr;
     }
     getNextToken();
     if (CurTok != tok_identifier) {
-        syntaxerror(string(function name error , using identifier));
+        syntaxerror(string("function name error , using identifier"));
         return nullptr;
     }
     std::string FnName = IdentifierStr;
@@ -70,7 +70,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     if (CurTok == '{') {
         Body = ParseBody(); //deg f a,b {}
     } else {
-        syntaxerror(string(function definition error , missing "{"))
+        syntaxerror(string("function definition error , missing \"{\""));
         return nullptr;
     }
     auto Proto = std::make_unique<PrototypeAST>(FnName, std::move(Args));
