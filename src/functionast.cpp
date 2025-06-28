@@ -1,5 +1,6 @@
 #include "tokenizer.h"
 #include "parser.h"
+#include "definition.h"
 extern std::unique_ptr<ExprAST> ParseExpression();
 //变量为tok_identifier,解析Args
 std::vector<std::string> ParseArgs() {
@@ -47,7 +48,9 @@ std::unique_ptr<PrototypeAST> ParsePrototype(){
         syntaxerror(std::string("function prototype error , not using \";\""));
         return nullptr;
     }
-    return std::make_unique<PrototypeAST>(FnName, std::move(Args));
+    auto Proto = std::make_unique<PrototypeAST>(FnName, std::move(Args));
+    functions[FnName] = *Proto; 
+    return Proto;
 }
 
 std::unique_ptr<FunctionAST> ParseDefinition(){

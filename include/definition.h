@@ -2,5 +2,5 @@
 #define DEFINITION_H
 #include "ast.h"
 #include <map>
-static map<string,PrototypeAST> functions;
+static std::map<std::string,PrototypeAST> functions;
 #endif
