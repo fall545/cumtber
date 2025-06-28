@@ -72,6 +72,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
     }
     if (IdentifierStr == "while") {
         return ParseWhileExpr();
+    }
     if (flag == tok_identifier) {
         // 检查标识符后是否跟随 '('
         std::string callee = IdentifierStr;
