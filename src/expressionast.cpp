@@ -69,9 +69,11 @@ std::unique_ptr<ExprAST> ParseExpression() {
     int ch_flag;
     int flag = CurTok;
     if (IdentifierStr == "if") {
+        getNextToken();
         return ParseIfExpr();
     }
     if (IdentifierStr == "while") {
+        getNextToken();
         return ParseWhileExpr();
     }
     if (flag == tok_identifier) {
