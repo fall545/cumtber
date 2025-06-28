@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-
+extern std::unique_ptr<ExprAST> ParseExpression();
 // ========== 简化的AST节点实现 ==========
 std::string IfExprAST::codegen() {
     if (Cond && Then && Else) {
@@ -30,14 +30,6 @@ std::string WhileExprAST::codegen() {
 
 
 
-// ParseTopLevelExpr实现
-std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
-    if (auto E = ParsePrimary()) {
-        std::unique_ptr<PrototypeAST> Proto(new PrototypeAST("__anon_expr", std::vector<std::string>()));
-        return std::unique_ptr<FunctionAST>(new FunctionAST(std::move(Proto), std::move(E)));
-    }
-    return nullptr;
-}
 
 // ========== 简化的解析器 ==========
 // 简化的数字解析 - 只支持简单数字
