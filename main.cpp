@@ -2,8 +2,15 @@
 #include "parser.h"
 #include <iostream>
 extern std::unique_ptr<FunctionAST> ParseDefinition();
-extern std::unique_ptr<FunctionAST> ParseTopLevelExpr();
-
+std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
+  if (auto E = ParseExpression()) {
+    // Make an anonymous proto.
+    auto Proto = std::make_unique<PrototypeAST>("__anon_expr",
+                                                 std::vector<std::string>());
+    return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
+  }
+  return nullptr;
+}
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto FnAST = ParseTopLevelExpr()) {
