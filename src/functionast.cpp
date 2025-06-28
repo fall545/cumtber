@@ -74,6 +74,7 @@ std::unique_ptr<FunctionAST> ParseDefinition(){
         return nullptr;
     }
     auto Proto = std::make_unique<PrototypeAST>(FnName, std::move(Args));
+    functions[FnName] = *Proto;
     return std::make_unique<FunctionAST>(std::move(Proto), std::move(Body));
 }
 
