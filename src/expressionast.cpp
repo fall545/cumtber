@@ -67,6 +67,11 @@ std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
     int flag = CurTok;
+    if (IdentifierStr == "if") {
+        return ParseIfExpr();
+    }
+    if (IdentifierStr == "while") {
+        return ParseWhileExpr();
     if (flag == tok_identifier) {
         // 检查标识符后是否跟随 '('
         std::string callee = IdentifierStr;
@@ -104,10 +109,11 @@ std::unique_ptr<ExprAST> ParseExpression() {
     } else if (flag == tok_number) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
         ch_flag = getNextToken(); // 获取下一个标记
+    } else {
         syntaxerror(std::string("expression error,Unexpected token at the beginning of expression"));
     }
 
-    while (ch_flag != ';') {
+    while (ch_flag != ';' && ch_flag != '{') {
         if (ch_flag == tok_number) {
             operands.push(std::make_unique<NumberExprAST>(NumVal));
             ch_flag = getNextToken();
