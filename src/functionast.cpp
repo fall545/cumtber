@@ -4,8 +4,8 @@
 //变量为tok_identifier,解析Args
 static std::vector<std::string> ParseArgs() {
     std::vector<std::string> Args;
-    while (CurTok == tok_identifier) {
-        Args.push_back(tok_identifier);
+    while (CurTok == IdentifierStr) {
+        Args.push_back(IdentifierStr);
         getNextToken();
         if (CurTok != ',') break;
         getNextToken();
@@ -20,17 +20,14 @@ static std::unique_ptr<BlockExprAST> ParseBody() {
     std::vector<std::unique_ptr<ExprAST>> Stmts;
     while (CurTok != '}') {
         std::unique_ptr<ExprAST> Stmt;
-        
-        if (CurTok == tok_if) {
+        if (IdentifierStr == "if") {
             Stmt = ParseIfExpr();
-        } else if (CurTok == tok_while) {
+        } else if (IdentifierStr == "while") {
             Stmt = ParseWhileExpr();
         } else {
             Stmt = ParseExpression();
         }
-
         if (!Stmt) return nullptr;
-        
         Stmts.push_back(std::move(Stmt));
     }
     getNextToken(); 
@@ -45,7 +42,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
     if (CurTok != tok_identifier) {
         return nullptr;
     }
-    std::string FnName = tok_identifier;
+    std::string FnName = IdentifierStr;
     getNextToken();
     auto Args = ParseArgs();
     if (CurTok == ';') {
@@ -62,7 +59,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     if (CurTok != tok_identifier) {
         return nullptr;
     }
-    std::string FnName = tok_identifier;
+    std::string FnName = IdentifierStr;
     getNextToken();
     auto Args = ParseArgs();
     std::unique_ptr<BlockExprAST> Body = nullptr;
