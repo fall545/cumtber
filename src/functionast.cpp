@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 extern std::string IdentifierStr;
+extern int CurTok;
 extern std::unique_ptr<ExprAST> ParseExpression();
 extern std::unique_ptr<ExprAST> ParseIfExpr() ;
 extern std::unique_ptr<ExprAST> ParseWhileExpr() ;

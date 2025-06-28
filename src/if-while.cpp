@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <string>
 extern std::string IdentifierStr;
+extern int CurTok;
 extern std::unique_ptr<ExprAST> ParseExpression();
 // 简化的if语句解析
 std::unique_ptr<ExprAST> ParseIfExpr() {
