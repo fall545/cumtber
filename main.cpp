@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include <iostream>
+std::string IdentifierStr;
 extern std::unique_ptr<FunctionAST> ParseDefinition();
 std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
   if (auto E = ParseExpression()) {

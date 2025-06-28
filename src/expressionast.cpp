@@ -11,6 +11,7 @@ enum {
 
 extern std::unique_ptr<ExprAST> ParseIfExpr();
 extern std::unique_ptr<ExprAST> ParseWhileExpr();
+extern std::string IdentifierStr;
 
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
