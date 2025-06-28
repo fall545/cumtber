@@ -25,16 +25,17 @@ enum{
 static unsigned long long linenum=0;
 
 static void syntaxerror(std::string error){
-  printf("at line %d , syntax error :\n%s",linenum,error.c_str());
+  printf("at line %d , syntax error : \n%s\n\n",linenum,error.c_str());
 }
 
 static int gettok() {
   static int LastChar = ' ';
 
   // Skip any whitespace.
-  while (isspace(LastChar))
-    LastChar = getchar();
-
+  while (isspace(LastChar)) {
+  if (LastChar == '\n') linenum++;
+  LastChar = getchar();
+}
   if (isalpha(LastChar)) { // identifier: [a-zA-Z][a-zA-Z0-9]*
     IdentifierStr = LastChar;
     while (isalnum((LastChar = getchar())))
@@ -59,15 +60,14 @@ static int gettok() {
   }
 
   if (LastChar == '#') {
-    // Comment until end of line.
-    do
-      LastChar = getchar();
-      
-    while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
-    if(LastChar == '\n') linenum++;
-    if (LastChar != EOF)
-      return gettok();
-  }
+  // Comment until end of line.
+  do {
+    if (LastChar == '\n') linenum++;
+    LastChar = getchar();
+  } while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
+  if (LastChar != EOF)
+    return gettok();
+}
 
   // Check for end of file.  Don't eat the EOF.
   if (LastChar == EOF)
