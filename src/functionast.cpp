@@ -4,8 +4,8 @@
 //变量为tok_identifier,解析Args
 static std::vector<std::string> ParseArgs() {
     std::vector<std::string> Args;
-    while (CurTok == IdentifierStr) {
-        Args.push_back(IdentifierStr);
+    while (CurTok == tok_identifier) {
+        Args.push_back(tok_identifier);
         getNextToken();
         if (CurTok != ',') break;
         getNextToken();
@@ -66,7 +66,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     std::string FnName = IdentifierStr;
     getNextToken();
     auto Args = ParseArgs();
-    std::unique_ptr<BlockExprAST> Body = nullptr;
+    std::unique_ptr<ExprAST> Body = nullptr;
     if (CurTok == '{') {
         Body = ParseBody(); //deg f a,b {}
     } else {
