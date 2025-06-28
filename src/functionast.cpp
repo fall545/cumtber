@@ -47,7 +47,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
     if (CurTok == ';') {
         getNextToken(); //def f a,b;
     }else{
-        syntaxerror(string(function prototype error , not using ";");
+        syntaxerror(string(function prototype error , not using ";"));
         return nullptr;
     }
     return std::make_unique<PrototypeAST>(FnName, move(Args));
