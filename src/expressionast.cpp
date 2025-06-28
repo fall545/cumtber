@@ -8,6 +8,10 @@ enum {
     ERROR,
     OK
 };
+
+extern std::unique_ptr<ExprAST> ParseIfExpr();
+extern std::unique_ptr<ExprAST> ParseWhileExpr();
+
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
     else if (a != '#' && b == '#') return '>';
@@ -58,11 +62,17 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
  * @param r Reference to an ExprAST object where the resulting AST will be stored.
  * @return Status OK if the tree is successfully created, ERROR if an invalid token is encountered.
  */
-static std::unique_ptr<ExprAST> ParseExpression() {
+std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
     int flag = getNextToken();
+    if (IdentifierStr == "if") {
+        return ParseIfExpr();
+    }
+    if (IdentifierStr == "while") {
+        return ParseWhileExpr();
+    }
     if (flag == tok_identifier) {
         // 检查标识符后是否跟随 '('
         std::string callee = IdentifierStr;
