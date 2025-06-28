@@ -6,6 +6,7 @@
 
 
 
+
 /// ExprAST - Base class for all expression nodes.
 class ExprAST {
 public:
@@ -119,15 +120,16 @@ public:
 };
 
 // FunctionAST - This class represents a function definition itself.
-class FunctionAST {
+class FunctionAST: public ExprAST {
   std::unique_ptr<PrototypeAST> Proto;
   std::unique_ptr<ExprAST> Body;
 
 public:
   FunctionAST(std::unique_ptr<PrototypeAST> Proto,
               std::unique_ptr<ExprAST> Body)
-      : Proto(std::move(Proto)), Body(std::move(Body)) {}
-
+      : Proto(std::move(Proto)), Body(std::move(Body)) { }
   std::string codegen();
 };
+
+
 #endif
