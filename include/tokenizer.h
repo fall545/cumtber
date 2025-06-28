@@ -24,7 +24,7 @@ enum{
 };
 static unsigned long long linenum=0;
 
-void syntaxerror(string error){
+void syntaxerror(std::string error){
   printf("at line %d , syntax error :\n%s",linenum,error.c_str());
 }
 
@@ -62,10 +62,9 @@ static int gettok() {
     // Comment until end of line.
     do
       LastChar = getchar();
-    while (LastChar != EOF && LastChar != '\n' && LastChar != '\r'){
-      linenum+++;
-    }
-
+      
+    while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
+    if(LastChar == '\n') linenum++;
     if (LastChar != EOF)
       return gettok();
   }
