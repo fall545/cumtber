@@ -66,7 +66,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
-    int flag = getNextToken();
+    int flag = CurTok;
     if (flag == tok_identifier) {
         // 检查标识符后是否跟随 '('
         std::string callee = IdentifierStr;
