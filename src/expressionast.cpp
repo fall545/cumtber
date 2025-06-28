@@ -31,119 +31,165 @@ char Precede(const char& a, const char& b) {
     else if (precA < precB) return '<';
     else return '='; // Equal precedence
 }
-std::vector<int> funcFlag = {0};
+// 辅助函数：递归解析嵌套函数调用
+std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
+    std::vector<std::unique_ptr<ExprAST>> args;
+    int nextFlag;
+    while ((nextFlag = getNextToken()) != ')') {
+        if (nextFlag == tok_number) {
+            args.push_back(std::make_unique<NumberExprAST>(NumVal));
+        } else if (nextFlag == tok_identifier) {
+            std::string nestedCallee = IdentifierStr;
+            int nestedFlag = getNextToken();
+            if (nestedFlag == '(') {
+                // 嵌套函数调用
+                args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+            } else {
+                args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
+            }
+        } else if (nextFlag == ',') {
+            // 跳过逗号，继续解析下一个参数
+            continue;
+        } else {
+            syntaxerror(std::string("function call error,Unexpected token in nested call"));
+        }
+    }
+    return args;
+}
+/**
+ * @brief Creates an abstract syntax tree (AST) from a sequence of tokens.
+ * 
+ * @param r Reference to an ExprAST object where the resulting AST will be stored.
+ * @return Status OK if the tree is successfully created, ERROR if an invalid token is encountered.
+ */
 std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operators;
     std::stack<std::unique_ptr<ExprAST>> operands;
-    int currentToken;
-    if(funcFlag.back()) {
-        currentToken = CurTok;
-    } else {
-        currentToken = getNextToken();
-    }
-    while (currentToken != ';') { 
-        if (funcFlag.back() && currentToken == ',') {
-            funcFlag.push_back(0);
-            break;
-        }
-        if (funcFlag.back() && currentToken == ')') {
-            break;
-        }
-        if (currentToken == tok_identifier) {
-            // 检查标识符后是否跟随 '('
-            std::string callee = IdentifierStr;
-            currentToken = getNextToken(); // 消耗当前 token  (
-            if (currentToken == '(') {
-                // 函数调用
-                funcFlag.back() ++;
-                std::vector<std::unique_ptr<ExprAST>> args;
-                currentToken = getNextToken(); // 消耗 '('   1
-                while (currentToken != ')') {
-                    if (currentToken == tok_number || currentToken == tok_identifier) {
-                        auto nestedExpr = ParseExpression();
-                        currentToken = CurTok;
-                        if (!nestedExpr) {
-                            syntaxerror(std::string("function call error,Failed to parse nested function call ") + std::to_string(funcFlag.back()));
-                            return nullptr;
-                        }
-                        args.push_back(std::move(nestedExpr));
-                    } else if (currentToken == ')') {
-                        break;
+    int ch_flag;
+    int flag = getNextToken();
+    if (flag == tok_identifier) {
+        // 检查标识符后是否跟随 '('
+        std::string callee = IdentifierStr;
+        int nextFlag = getNextToken();
+        ch_flag = nextFlag;
+        if (nextFlag == '(') {
+            // 函数调用
+            std::vector<std::unique_ptr<ExprAST>> args;
+            while ((nextFlag = getNextToken()) != ')') {
+                // std::cout<<NumVal;
+                if (nextFlag == tok_number) {
+                    args.push_back(std::make_unique<NumberExprAST>(NumVal));
+                } else if (nextFlag == tok_identifier) {
+                    std::string nestedCallee = IdentifierStr;
+                    int nestedFlag = getNextToken();
+                    if (nestedFlag == '(') {
+                        args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
                     } else {
-                        syntaxerror(std::string("function call error,Unexpected token in function call ") + std::to_string(funcFlag.back()));
-                        return nullptr;
+                        args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
                     }
-                    // currentToken = getNextToken(); // 消耗当前 token
+                } else if (nextFlag == ',') {
+                    // 跳过逗号，继续解析下一个参数
+                    continue;
+                } else {
+                    syntaxerror(std::string("function call error,Unexpected token in function call"));
                 }
-                // 将函数调用节点压入操作数栈
+            }
+            // 将函数调用节点压入操作数栈
+            operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
+            ch_flag = getNextToken();
+        } else {
+            // 普通标识符
+            operands.push(std::make_unique<VariableExprAST>(callee));
+        }
+    } else if (flag == tok_number) {
+        operands.push(std::make_unique<NumberExprAST>(NumVal));
+        ch_flag = getNextToken(); // 获取下一个标记
+        syntaxerror(std::string("expression error,Unexpected token at the beginning of expression"));
+    }
+
+    while (ch_flag != ';') {
+        if (ch_flag == tok_number) {
+            operands.push(std::make_unique<NumberExprAST>(NumVal));
+            ch_flag = getNextToken();
+        } else if (ch_flag == tok_identifier) {
+            std::string callee = IdentifierStr;
+            int nextFlag = getNextToken();
+            ch_flag = nextFlag;
+            if (nextFlag == '(') {
+                // 函数调用
+                std::vector<std::unique_ptr<ExprAST>> args;
+                while ((nextFlag = getNextToken()) != ')') {
+                    if (nextFlag == tok_number) {
+                        args.push_back(std::make_unique<NumberExprAST>(NumVal));
+                    } else if (nextFlag == tok_identifier) {
+                        std::string nestedCallee = IdentifierStr;
+                        int nestedFlag = getNextToken();
+                        if (nestedFlag == '(') {
+                            args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                        } else {
+                            args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
+                        }
+                    } else if (nextFlag == ',') {
+                        // 跳过逗号，继续解析下一个参数
+                        continue;
+                    } else {
+                        syntaxerror(std::string("function call error,Unexpected token in function call"));
+                    }
+                }
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
-                std::cout << (char) currentToken;
-                currentToken = getNextToken(); // 消耗 ')'
             } else {
-                // 普通标识符
                 operands.push(std::make_unique<VariableExprAST>(callee));
             }
-        } else if (currentToken == tok_number) {
-            // 数字节点
-            operands.push(std::make_unique<NumberExprAST>(NumVal));
-            currentToken = getNextToken(); // 消耗当前 token
-            // std::cout << (char)currentToken;
-            // std::cout << funcFlag;
-        } else if (currentToken == '(') {
-            operators.push(std::make_unique<VariableExprAST>("("));
-            currentToken = getNextToken(); // 消耗 '('
-        } else if (currentToken == ')') {
-            while (!operators.empty() && dynamic_cast<VariableExprAST*>(operators.top().get())->getName() != "(") {
-                auto op = std::move(operators.top());
-                operators.pop();
-
-                auto rhs = std::move(operands.top());
-                operands.pop();
-
-                auto lhs = std::move(operands.top());
-                operands.pop();
-
-                operands.push(std::make_unique<BinaryExprAST>(
-                    dynamic_cast<VariableExprAST*>(op.get())->getName()[0],
-                    std::move(lhs),
-                    std::move(rhs)
-                ));
-            }
-            if (!operators.empty()) {
-                operators.pop(); // 弹出 '('
-                currentToken = getNextToken(); // 消耗 ')'
-            } else {
-                // std::cout << (char)currentToken;
-                currentToken = getNextToken();
-                // std::cout << (char)currentToken;
-            }
         } else {
-            // 处理操作符
-            while (!operators.empty() && Precede(dynamic_cast<VariableExprAST*>(operators.top().get())->getName()[0], currentToken) == '>') {
-                auto op = std::move(operators.top());
-                operators.pop();
+            switch (ch_flag) {
+                case '(':
+                    operators.push(std::make_unique<VariableExprAST>("("));
+                    ch_flag = getNextToken();
+                    break;
+                case ')':
+                    while (!operators.empty() && dynamic_cast<VariableExprAST*>(operators.top().get())->getName() != "(") {
+                        auto op = std::move(operators.top());
+                        operators.pop();
 
-                auto rhs = std::move(operands.top());
-                operands.pop();
+                        auto rhs = std::move(operands.top());
+                        operands.pop();
 
-                auto lhs = std::move(operands.top());
-                operands.pop();
+                        auto lhs = std::move(operands.top());
+                        operands.pop();
 
-                operands.push(std::make_unique<BinaryExprAST>(
-                    dynamic_cast<VariableExprAST*>(op.get())->getName()[0],
-                    std::move(lhs),
-                    std::move(rhs)
-                ));
+                        operands.push(std::make_unique<BinaryExprAST>(
+                            dynamic_cast<VariableExprAST*>(op.get())->getName()[0],
+                            std::move(lhs),
+                            std::move(rhs)
+                        ));
+                    }
+                    if (!operators.empty()) {
+                        operators.pop(); // 弹出 '('
+                    }
+                    ch_flag = getNextToken();
+                    break;
+                default:
+                    while (!operators.empty() && Precede(dynamic_cast<VariableExprAST*>(operators.top().get())->getName()[0], ch_flag) == '>') {
+                        auto op = std::move(operators.top());
+                        operators.pop();
+
+                        auto rhs = std::move(operands.top());
+                        operands.pop();
+
+                        auto lhs = std::move(operands.top());
+                        operands.pop();
+
+                        operands.push(std::make_unique<BinaryExprAST>(
+                            dynamic_cast<VariableExprAST*>(op.get())->getName()[0],
+                            std::move(lhs),
+                            std::move(rhs)
+                        ));
+                    }
+                    operators.push(std::make_unique<VariableExprAST>(std::string(1, ch_flag)));
+                    ch_flag = getNextToken();
+                    break;
             }
-            operators.push(std::make_unique<VariableExprAST>(std::string(1, currentToken)));
-            currentToken = getNextToken(); // 消耗操作符
         }
-    }
-    if (operators.empty() && operands.size() == 1) {
-        // std::cout << "123";
-        auto it = funcFlag.end();
-        *(it - 2) --; 
-        return std::move(operands.top());
     }
 
     while (!operators.empty()) {
@@ -163,13 +209,11 @@ std::unique_ptr<ExprAST> ParseExpression() {
         ));
     }
 
-    // 返回最终的 AST 根节点
+    // 最终的 AST 根节点
     if (!operands.empty()) {
-        funcFlag.back() --;
         return std::move(operands.top());
     }
     syntaxerror(std::string("expression error,Failed to parse expression"));
-    return nullptr; // Return nullptr to indicate failure
 }
 
 std::string NumberExprAST::codegen() {
