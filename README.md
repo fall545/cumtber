@@ -1,6 +1,15 @@
 # cumtber
 parser
 
+2025.6.28
+报错信息规范
+"[报错的部分] , 具体原因"
+e.g
+function definition error , missing "def"
+使用syntaxerror进行输出
+syntaxerror(string(function definition error , missing "def"));
+
+
 2025.6.24
 codegen写法规范,注意类外定义,别再动别人要动的文件了
 std::string codegen(){
