@@ -1,11 +1,12 @@
 #include "tokenizer.h"
 #include "parser.h"
+#include <iostream>
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto FnAST = ParseTopLevelExpr()) {
     auto info = FnAST->codegen();
     fprintf(stderr, "Read ParseTopLevelExpr\n");
-    cout<<info<<"\nParseTopLevelExpr end\n";
+    std::cout<<info<<"\nParseTopLevelExpr end\n";
   } else {
     // Skip token for error recovery.
     getNextToken();
@@ -15,7 +16,7 @@ static void HandleDefinition() {
   if (auto FnAST = ParseDefinition()) {
       auto info = FnAST->codegen();
       fprintf(stderr, "Read function definition:\n");
-      cout<<info<<"\nfunction definition end\n";
+      std::cout<<info<<"\nfunction definition end\n";
   } else {
     // Skip token for error recovery.
     getNextToken();
@@ -44,6 +45,7 @@ int main(){
     BinopPrecedence['<'] = 10;
     BinopPrecedence['+'] = 20;
     BinopPrecedence['-'] = 20;
+    BinopPrecedence['='] = 50;
     BinopPrecedence['*'] = 40; // highest.
 
     fprintf(stderr, "ready> ");
