@@ -8,14 +8,9 @@
 #include <cstdlib>
 #include <string>
 
-// ========== 规范化错误处理 ==========
-void syntaxerror(const std::string& message) {
-    std::cerr << "Syntax Error: " << message << std::endl;
-}
-
-std::unique_ptr<ExprAST> LogError(const char *Str) {
-    syntaxerror(std::string(Str));
-    return nullptr;
+// ========== 必要的虚函数实现 ==========
+std::string ExprAST::codegen() {
+    return "";
 }
 
 // ========== 简化的AST节点实现 ==========
@@ -149,4 +144,17 @@ std::string BlockExprAST::codegen() {
         if (stmt) result += stmt->codegen() + ";\n";
     }
     return result;
+}
+
+// ParseTopLevelExpr实现
+std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
+    if (auto E = ParseExpression()) {
+        // 创建一个匿名函数来包装顶层表达式
+        std::unique_ptr<PrototypeAST> Proto(new PrototypeAST("__anon_expr", std::vector<std::string>()));
+        std::vector<std::unique_ptr<ExprAST> > stmts;
+        stmts.push_back(std::move(E));
+        std::unique_ptr<BlockExprAST> Body(new BlockExprAST(std::move(stmts)) );
+        return std::unique_ptr<FunctionAST>(new FunctionAST(std::move(Proto), std::move(Body)));
+    }
+    return nullptr;
 }
