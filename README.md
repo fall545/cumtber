@@ -1,6 +1,12 @@
 # cumtber
 parser
 
+测试方法
+(base) ➜  build git:(main) ./cumtber <../test/fib.cumtber
+或者lldm gdb调试
+
+
+
 2025.6.28
 报错信息规范
 "[报错的部分] , 具体原因"
