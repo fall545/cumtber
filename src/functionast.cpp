@@ -5,7 +5,7 @@
 static std::vector<std::string> ParseArgs() {
     std::vector<std::string> Args;
     while (CurTok == tok_identifier) {
-        Args.push_back(tok_identifier);
+        Args.push_back(IdentifierStr);
         getNextToken();
         if (CurTok != ',') break;
         getNextToken();
@@ -15,20 +15,23 @@ static std::vector<std::string> ParseArgs() {
 
 //parse FuncBody
 static std::unique_ptr<ExprAST> ParseBody() {
+    std::unique_ptr<ExprAST> Stmt;
     if (CurTok != '{') {
-        syntaxerror(std::string("function body error , missing \"{\""));
+        syntaxerror(std::string("function definition error , missing \"{\""));
         return nullptr;
     }
-    getNextToken();    
-    std::unique_ptr<ExprAST> Stmts;
+    getNextToken();
     if (CurTok != '}') {
-        Stmts = ParseExpression();
-    }else {
-        syntaxerror(std::string("function body error , missing \"}\""));
-        return nullptr;
+        if (IdentifierStr=="if"){
+            Stmt = ParseIfExpr();
+        }else if (IdentifierStr=="while"){
+            Stmt = ParseWhileExpr();
+        }else {
+            Stmt = ParseExpression();
+        }
     }
-    getNextToken(); 
-    return std::make_unique<ExprAST>(std::move(Stmts));
+    getNextToken(); // 跳过}
+    return Stmt;
 }
 
 static std::unique_ptr<PrototypeAST> ParsePrototype(){
@@ -39,7 +42,6 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
     getNextToken();
     if (CurTok != tok_identifier) {
         syntaxerror(std::string("function name error , using identifier"));
-
         return nullptr;
     }
     std::string FnName = IdentifierStr;
@@ -51,7 +53,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
         syntaxerror(std::string("function prototype error , not using \";\""));
         return nullptr;
     }
-    return std::make_unique<PrototypeAST>(FnName, move(Args));
+    return std::make_unique<PrototypeAST>(FnName, std::move(Args));
 }
 
 static std::unique_ptr<FunctionAST> ParseDefinition(){
@@ -67,7 +69,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition(){
     std::string FnName = IdentifierStr;
     getNextToken();
     auto Args = ParseArgs();
-    std::unique_ptr<ExprAST> Body = nullptr;
+    std::unique_ptr<ExprAST> Body;
     if (CurTok == '{') {
         Body = ParseBody(); //deg f a,b {}
     } else {
@@ -92,10 +94,11 @@ std::string PrototypeAST::codegen() {
 
 std::string FunctionAST::codegen() {
     std::string info = Proto->codegen() + " {\n";
-    if (Body){
-            info += "    " + Body->codegen();
-            info += "\n";
-        }
-    info += "}\n";
+    info += "    " + Body->codegen();
+    if (!dynamic_cast<IfExprAST*>(Body.get()) && 
+                    !dynamic_cast<WhileExprAST*>(Body.get())) {
+                    info += ";";
+                }
+    info += "\n";
     return info;
 }
