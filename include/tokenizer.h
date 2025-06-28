@@ -11,7 +11,8 @@
 #include <string>
 #include <vector>
 
-static std::string IdentifierStr; // Filled in if tok_identifier
+// std::string IdentifierStr; // Filled in if tok_identifier
+extern std::string IdentifierStr;
 static double NumVal;             // Filled in if tok_number
 enum{
   tok_eof = -1,//这个是结束的标志,不在你们的语法解析里,不用管
