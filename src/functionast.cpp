@@ -1,8 +1,8 @@
 #include "tokenizer.h"
 #include "parser.h"
-
+extern std::unique_ptr<ExprAST> ParseExpression();
 //变量为tok_identifier,解析Args
-static std::vector<std::string> ParseArgs() {
+std::vector<std::string> ParseArgs() {
     std::vector<std::string> Args;
     while (CurTok == tok_identifier) {
         Args.push_back(IdentifierStr);
@@ -14,7 +14,7 @@ static std::vector<std::string> ParseArgs() {
 }
 
 //parse FuncBody
-static std::unique_ptr<ExprAST> ParseBody() {
+std::unique_ptr<ExprAST> ParseBody() {
     std::unique_ptr<ExprAST> Stmt;
     if (CurTok != '{') {
         syntaxerror(std::string("function definition error , missing \"{\""));
@@ -22,19 +22,13 @@ static std::unique_ptr<ExprAST> ParseBody() {
     }
     getNextToken();
     if (CurTok != '}') {
-        if (IdentifierStr=="if"){
-            Stmt = ParseIfExpr();
-        }else if (IdentifierStr=="while"){
-            Stmt = ParseWhileExpr();
-        }else {
-            Stmt = ParseExpression();
-        }
+        Stmt = ParseExpression();
     }
     getNextToken(); // 跳过}
     return Stmt;
 }
 
-static std::unique_ptr<PrototypeAST> ParsePrototype(){
+std::unique_ptr<PrototypeAST> ParsePrototype(){
     if (CurTok != tok_def) {
         syntaxerror(std::string("function definition error , missing \"def\""));
         return nullptr;
@@ -56,7 +50,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype(){
     return std::make_unique<PrototypeAST>(FnName, std::move(Args));
 }
 
-static std::unique_ptr<FunctionAST> ParseDefinition(){
+std::unique_ptr<FunctionAST> ParseDefinition(){
     if (CurTok != tok_def) {
         syntaxerror(std::string("function definition error , missing \"def\""));
         return nullptr;

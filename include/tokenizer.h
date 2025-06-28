@@ -24,7 +24,7 @@ enum{
 };
 static unsigned long long linenum=0;
 
-void syntaxerror(std::string error){
+static void syntaxerror(std::string error){
   printf("at line %d , syntax error :\n%s",linenum,error.c_str());
 }
 

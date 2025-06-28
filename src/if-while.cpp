@@ -8,6 +8,45 @@
 #include <cstdlib>
 #include <string>
 extern std::unique_ptr<ExprAST> ParseExpression();
+// 简化的if语句解析
+std::unique_ptr<ExprAST> ParseIfExpr() {
+    // 进入该函数时，CurTok和IdentifierStr已是"if"，且已getNextToken()
+    // 解析条件（表达式）
+    auto Cond = ParseExpression();
+    if (!Cond) return nullptr;
+    
+    // 解析then分支（表达式）
+    auto Then = ParseExpression();
+    if (!Then) return nullptr;
+    
+    // 检查else
+    if (!(CurTok == tok_identifier && IdentifierStr == "else")) {
+        syntaxerror("if statement , missing 'else' keyword");
+        return nullptr;
+    }
+    getNextToken(); // 跳过else
+    
+    // 解析else分支（表达式）
+    auto Else = ParseExpression();
+    if (!Else) return nullptr;
+    
+    return std::unique_ptr<IfExprAST>(new IfExprAST(std::move(Cond), std::move(Then), std::move(Else)));
+}
+
+// 简化的while循环解析
+std::unique_ptr<ExprAST> ParseWhileExpr() {
+    // 进入该函数时，CurTok和IdentifierStr已是"while"，且已getNextToken()
+    // 解析条件(表达式）
+    auto Cond = ParseExpression();
+    if (!Cond) return nullptr;
+    
+    // 解析循环体（表达式）
+    auto Body = ParseExpression();
+    if (!Body) return nullptr;
+    
+    return std::unique_ptr<WhileExprAST>(new WhileExprAST(std::move(Cond), std::move(Body)));
+}
+
 // ========== 简化的AST节点实现 ==========
 std::string IfExprAST::codegen() {
     if (Cond && Then && Else) {
@@ -72,44 +111,6 @@ std::unique_ptr<ExprAST> ParsePrimary() {
     }
 }
 
-// 简化的if语句解析
-std::unique_ptr<ExprAST> ParseIfExpr() {
-    // 进入该函数时，CurTok和IdentifierStr已是"if"，且已getNextToken()
-    // 解析条件（表达式）
-    auto Cond = ParseExpression();
-    if (!Cond) return nullptr;
-    
-    // 解析then分支（表达式）
-    auto Then = ParseExpression();
-    if (!Then) return nullptr;
-    
-    // 检查else
-    if (!(CurTok == tok_identifier && IdentifierStr == "else")) {
-        syntaxerror("if statement , missing 'else' keyword");
-        return nullptr;
-    }
-    getNextToken(); // 跳过else
-    
-    // 解析else分支（表达式）
-    auto Else = ParseExpression();
-    if (!Else) return nullptr;
-    
-    return std::unique_ptr<IfExprAST>(new IfExprAST(std::move(Cond), std::move(Then), std::move(Else)));
-}
-
-// 简化的while循环解析
-std::unique_ptr<ExprAST> ParseWhileExpr() {
-    // 进入该函数时，CurTok和IdentifierStr已是"while"，且已getNextToken()
-    // 解析条件(表达式）
-    auto Cond = ParseExpression();
-    if (!Cond) return nullptr;
-    
-    // 解析循环体（表达式）
-    auto Body = ParseExpression();
-    if (!Body) return nullptr;
-    
-    return std::unique_ptr<WhileExprAST>(new WhileExprAST(std::move(Cond), std::move(Body)));
-}
 
 // 简化的表达式解析
 // std::unique_ptr<ExprAST> ParseExpression() { 
