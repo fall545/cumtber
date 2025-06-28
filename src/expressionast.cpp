@@ -2,7 +2,6 @@
 #include "ast.h"
 #include <stack>
 #include "parser.h"
-#include <string>
 #include <iostream>
 typedef int Status;
 enum {
