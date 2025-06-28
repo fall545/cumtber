@@ -1,6 +1,9 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include <iostream>
+extern std::unique_ptr<FunctionAST> ParseDefinition();
+extern std::unique_ptr<FunctionAST> ParseTopLevelExpr();
+
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto FnAST = ParseTopLevelExpr()) {
