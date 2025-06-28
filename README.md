@@ -7,7 +7,13 @@ parser
 e.g
 function definition error , missing "def"
 使用syntaxerror进行输出
-syntaxerror(string(function definition error , missing "def"));
+
+syntaxerror("function definition error , missing "def" ");
+string error = "function definition error , missing "def" "
+syntaxerror(error);
+
+
+
 
 
 2025.6.24
