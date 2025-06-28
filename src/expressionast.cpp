@@ -12,6 +12,7 @@ enum {
 extern std::unique_ptr<ExprAST> ParseIfExpr();
 extern std::unique_ptr<ExprAST> ParseWhileExpr();
 extern std::string IdentifierStr;
+extern int CurTok;
 
 char Precede(const char& a, const char& b) {
     if (a == '#' && b != '#') return '<';
@@ -68,13 +69,15 @@ std::unique_ptr<ExprAST> ParseExpression() {
     std::stack<std::unique_ptr<ExprAST>> operands;
     int ch_flag;
     int flag = CurTok;
-    if (IdentifierStr == "if") {
-        getNextToken();
-        return ParseIfExpr();
-    }
-    if (IdentifierStr == "while") {
-        getNextToken();
-        return ParseWhileExpr();
+    if (CurTok == tok_identifier) {
+        if (IdentifierStr == "if") {
+            getNextToken();
+            return ParseIfExpr();
+        }
+        if (IdentifierStr == "while") {
+            getNextToken();
+            return ParseWhileExpr();
+        }
     }
     if (flag == tok_identifier) {
         // 检查标识符后是否跟随 '('
