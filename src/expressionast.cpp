@@ -2,6 +2,7 @@
 #include "ast.h"
 #include <stack>
 #include "parser.h"
+#include <string>
 #include <iostream>
 typedef int Status;
 enum {
@@ -47,7 +48,7 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
             // 跳过逗号，继续解析下一个参数
             continue;
         } else {
-            throw std::runtime_error("Unexpected token in nested call");
+            syntaxerror(std::string("function call error,Unexpected token in nested call"));
         }
     }
     return args;
@@ -87,7 +88,7 @@ static std::unique_ptr<ExprAST> ParseExpression() {
                     // 跳过逗号，继续解析下一个参数
                     continue;
                 } else {
-                    throw std::runtime_error("Unexpected token in function call");
+                    syntaxerror(std::string("function call error,Unexpected token in function call"));
                 }
             }
             // 将函数调用节点压入操作数栈
@@ -100,8 +101,7 @@ static std::unique_ptr<ExprAST> ParseExpression() {
     } else if (flag == tok_number) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
         ch_flag = getNextToken(); // 获取下一个标记
-    } else {
-        throw std::runtime_error("Unexpected token at the beginning of expression");
+        syntaxerror(std::string("expression error,Unexpected token at the beginning of expression"));
     }
 
     while (ch_flag != ';') {
@@ -130,7 +130,7 @@ static std::unique_ptr<ExprAST> ParseExpression() {
                         // 跳过逗号，继续解析下一个参数
                         continue;
                     } else {
-                        throw std::runtime_error("Unexpected token in function call");
+                        syntaxerror(std::string("function call error,Unexpected token in function call"));
                     }
                 }
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
@@ -210,48 +210,48 @@ static std::unique_ptr<ExprAST> ParseExpression() {
     if (!operands.empty()) {
         return std::move(operands.top());
     }
-    throw std::runtime_error("Failed to parse expression");
+    syntaxerror(std::string("expression error,Failed to parse expression"));
 }
 
-Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
-    if (!node) return OK; // 如果节点为空，直接返回
+// Status InOrderTraverseTree(const std::unique_ptr<ExprAST>& node) {
+//     if (!node) return OK; // 如果节点为空，直接返回
 
-    // 根据节点类型进行处理
-    if (const auto* binaryNode = dynamic_cast<const BinaryExprAST*>(node.get())) {
-        // 中序遍历左子树
-        InOrderTraverseTree(binaryNode->getLHS());
+//     // 根据节点类型进行处理
+//     if (const auto* binaryNode = dynamic_cast<const BinaryExprAST*>(node.get())) {
+//         // 中序遍历左子树
+//         InOrderTraverseTree(binaryNode->getLHS());
 
-        // 输出当前节点（操作符）
-        std::cout << binaryNode->getOp() << " ";
+//         // 输出当前节点（操作符）
+//         std::cout << binaryNode->getOp() << " ";
 
-        // 中序遍历右子树
-        InOrderTraverseTree(binaryNode->getRHS());
-    } else if (const auto* numberNode = dynamic_cast<const NumberExprAST*>(node.get())) {
-        // 输出数字节点的值
-        std::cout << numberNode->getValue() << " ";
-    } else if (const auto* variableNode = dynamic_cast<const VariableExprAST*>(node.get())) {
-        // 输出变量节点的名称
-        std::cout << variableNode->getName() << " ";
-    } else if (const auto* callNode = dynamic_cast<const CallExprAST*>(node.get())) {
-        // 输出函数调用节点
-        std::cout << callNode->getCallee() << "(";
+//         // 中序遍历右子树
+//         InOrderTraverseTree(binaryNode->getRHS());
+//     } else if (const auto* numberNode = dynamic_cast<const NumberExprAST*>(node.get())) {
+//         // 输出数字节点的值
+//         std::cout << numberNode->getValue() << " ";
+//     } else if (const auto* variableNode = dynamic_cast<const VariableExprAST*>(node.get())) {
+//         // 输出变量节点的名称
+//         std::cout << variableNode->getName() << " ";
+//     } else if (const auto* callNode = dynamic_cast<const CallExprAST*>(node.get())) {
+//         // 输出函数调用节点
+//         std::cout << callNode->getCallee() << "(";
 
-        // 遍历函数参数
-        const auto& args = callNode->getArgs();
-        for (size_t i = 0; i < args.size(); ++i) {
-            InOrderTraverseTree(args[i]);
-            if (i < args.size() - 1) {
-                std::cout << ", ";
-            }
-        }
+//         // 遍历函数参数
+//         const auto& args = callNode->getArgs();
+//         for (size_t i = 0; i < args.size(); ++i) {
+//             InOrderTraverseTree(args[i]);
+//             if (i < args.size() - 1) {
+//                 std::cout << ", ";
+//             }
+//         }
 
-        std::cout << ") ";
-    } else {
-        throw std::runtime_error("Unknown node type in AST traversal");
-    }
+//         std::cout << ") ";
+//     } else {
+//         throw std::runtime_error("Unknown node type in AST traversal");
+//     }
 
-    return OK;
-}
+//     return OK;
+// }
 
 std::string NumberExprAST::codegen() {
     return "Number: " + std::to_string(Val);
