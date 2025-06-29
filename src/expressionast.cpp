@@ -44,8 +44,16 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
             std::string nestedCallee = IdentifierStr;
             int nestedFlag = getNextToken();
             if (nestedFlag == '(') {
+                auto tmp = ParseNestedCall();
                 // 嵌套函数调用
-                args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                // Check for nullptr in tmp
+                for (const auto& arg : tmp) {
+                    if (!arg) {
+                        // syntaxerror(std::string("function call error, Unexpected token in nested call"));
+                        return {};
+                    }
+                }
+                args.push_back(std::make_unique<CallExprAST>(nestedCallee, std::move(tmp)));
             } else {
                 args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
             }
@@ -53,7 +61,8 @@ std::vector<std::unique_ptr<ExprAST>> ParseNestedCall() {
             // 跳过逗号，继续解析下一个参数
             continue;
         } else {
-            syntaxerror(std::string("function call error,Unexpected token in nested call"));
+            return {};
+            // syntaxerror(std::string("function call error,Unexpected token in nested call"));
         }
     }
     return args;
@@ -95,7 +104,15 @@ std::unique_ptr<ExprAST> ParseExpression() {
                     std::string nestedCallee = IdentifierStr;
                     int nestedFlag = getNextToken();
                     if (nestedFlag == '(') {
-                        args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                        auto tmp = ParseNestedCall();
+                        // Check for nullptr in tmp
+                        for (const auto& arg : tmp) {
+                            if (!arg) {
+                                syntaxerror(std::string("function call error, Unexpected token in nested call"));
+                                return nullptr;
+                            }
+                        }
+                        args.push_back(std::make_unique<CallExprAST>(nestedCallee, std::move(tmp)));
                     } else {
                         args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
                     }
@@ -104,6 +121,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
                     continue;
                 } else {
                     syntaxerror(std::string("function call error,Unexpected token in function call"));
+                    return nullptr;
                 }
             }
             // 将函数调用节点压入操作数栈
@@ -118,9 +136,10 @@ std::unique_ptr<ExprAST> ParseExpression() {
         ch_flag = getNextToken(); // 获取下一个标记
     } else {
         syntaxerror(std::string("expression error,Unexpected token at the beginning of expression"));
+        return nullptr;
     }
 
-    while (ch_flag != ';' && ch_flag != '{') {
+    while (ch_flag != ';' && ch_flag != '{' && ch_flag != '}') {
         if (ch_flag == tok_number) {
             operands.push(std::make_unique<NumberExprAST>(NumVal));
             ch_flag = getNextToken();
@@ -138,7 +157,15 @@ std::unique_ptr<ExprAST> ParseExpression() {
                         std::string nestedCallee = IdentifierStr;
                         int nestedFlag = getNextToken();
                         if (nestedFlag == '(') {
-                            args.push_back(std::make_unique<CallExprAST>(nestedCallee, ParseNestedCall()));
+                            auto tmp = ParseNestedCall();
+                            // Check for nullptr in tmp
+                            for (const auto& arg : tmp) {
+                                if (!arg) {
+                                    syntaxerror(std::string("function call error, Unexpected token in nested call"));
+                                    return nullptr;
+                                }
+                            }
+                            args.push_back(std::make_unique<CallExprAST>(nestedCallee, std::move(tmp)));
                         } else {
                             args.push_back(std::make_unique<VariableExprAST>(nestedCallee));
                         }
@@ -147,6 +174,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
                         continue;
                     } else {
                         syntaxerror(std::string("function call error,Unexpected token in function call"));
+                        return nullptr;
                     }
                 }
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
@@ -227,6 +255,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
         return std::move(operands.top());
     }
     syntaxerror(std::string("expression error,Failed to parse expression"));
+    return nullptr;
 }
 
 std::string NumberExprAST::codegen() {

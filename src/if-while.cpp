@@ -43,6 +43,7 @@ std::unique_ptr<ExprAST> ParseWhileExpr() {
     if (!Cond) return nullptr;
     
     // 解析循环体（表达式）
+    getNextToken();
     auto Body = ParseExpression();
     if (!Body) return nullptr;
     
