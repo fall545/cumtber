@@ -66,13 +66,13 @@ static int gettok() {
   do {
     if (LastChar == '\n') linenum++;
     LastChar = getchar();
-  } while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
-  if (LastChar != EOF)
+  } while (LastChar != 4 && LastChar != '\n' && LastChar != '\r');
+  if (LastChar != 4)
     return gettok();
 }
 
   // Check for end of file.  Don't eat the EOF.
-  if (LastChar == EOF)
+  if (LastChar == 4)
     return tok_eof;
 
   // Otherwise, just return the character as its ascii value.

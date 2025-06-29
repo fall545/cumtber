@@ -15,11 +15,11 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     // 进入该函数时，CurTok和IdentifierStr已是"if"，且已getNextToken()
     // 解析条件（表达式）
     // getNextToken();
-    auto Cond = ParseExpression();
+    auto Cond = std::move(ParseExpression());
     if (!Cond) return nullptr;
     
     // 解析then分支（表达式）
-    auto Then = ParseExpression();
+    auto Then = std::move(ParseExpression());
     if (!Then) return nullptr;
     
     getNextToken();   // }
@@ -31,10 +31,10 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     getNextToken(); // 跳过else
     getNextToken(); // {
     // 解析else分支（表达式）
-    auto Else = ParseExpression();
+    auto Else = std::move(ParseExpression());
     if (!Else) return nullptr;
     getNextToken(); // }
-    return std::unique_ptr<IfExprAST>(new IfExprAST(std::move(Cond), std::move(Then), std::move(Else)));
+    return std::make_unique<IfExprAST>(std::move(Cond), std::move(Then), std::move(Else));
 }
 
 // 简化的while循环解析
@@ -49,7 +49,7 @@ std::unique_ptr<ExprAST> ParseWhileExpr() {
     auto Body = ParseExpression();
     if (!Body) return nullptr;
     
-    return std::unique_ptr<WhileExprAST>(new WhileExprAST(std::move(Cond), std::move(Body)));
+    return std::make_unique<WhileExprAST>(std::move(Cond), std::move(Body));
 }
 
 // ========== 简化的AST节点实现 ==========
