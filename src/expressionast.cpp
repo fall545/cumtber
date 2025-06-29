@@ -135,7 +135,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
         ch_flag = getNextToken(); // 获取下一个标记
     } else {
-        syntaxerror(std::string("expression error,Unexpected token at the beginning of expression"));
+        syntaxerror(std::string("expression error,Unexpected token"));
         return nullptr;
     }
 
