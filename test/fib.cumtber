@@ -1,14 +1,17 @@
+def minus a , b {   #minus
+    a - b ;
+}
 
 def fib n {       # fib
-    if n-1 =1 {
+    if n-1 = 1 {
         1 ;
     }
-    else{
-        if n-2=0 {
+    else {
+        if n-2 = 0 {
             2 ;
         }
-        else{
-            fib (n-1) + fib (n-2) ; #recursion
+        else {
+            fib ( minus ( n , 1 ) ) + fib ( minus ( n , 2 ) ) ; #recursion
         }
     }
 }
