@@ -27,8 +27,10 @@ std::unique_ptr<ExprAST> ParseBody() {
     getNextToken();
     if (CurTok != '}') {
         if (CurTok == tok_identifier && IdentifierStr == "if") {
+            getNextToken();
             Stmt = ParseIfExpr();
         } else if (CurTok == tok_identifier && IdentifierStr == "while") {
+            getNextToken();
             Stmt = ParseWhileExpr();
         } else {
             Stmt = ParseExpression();

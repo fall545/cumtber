@@ -130,7 +130,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
         } else {
             // 普通标识符
             operands.push(std::make_unique<VariableExprAST>(callee));
-            ch_flag = getNextToken();
+            // ch_flag = getNextToken();
         }
     } else if (flag == tok_number) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
@@ -182,7 +182,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
                 ch_flag = getNextToken();
             } else {
                 operands.push(std::make_unique<VariableExprAST>(callee));
-                ch_flag = getNextToken();
+                // ch_flag = getNextToken();
             }
         } else {
             switch (ch_flag) {
