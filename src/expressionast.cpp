@@ -130,6 +130,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
         } else {
             // 普通标识符
             operands.push(std::make_unique<VariableExprAST>(callee));
+            ch_flag = getNextToken();
         }
     } else if (flag == tok_number) {
         operands.push(std::make_unique<NumberExprAST>(NumVal));
@@ -139,7 +140,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
         return nullptr;
     }
 
-    while (ch_flag != ';' && ch_flag != '{' && ch_flag != '}') {
+    while (ch_flag != ';' && ch_flag != '{') {
         if (ch_flag == tok_number) {
             operands.push(std::make_unique<NumberExprAST>(NumVal));
             ch_flag = getNextToken();
@@ -178,8 +179,10 @@ std::unique_ptr<ExprAST> ParseExpression() {
                     }
                 }
                 operands.push(std::make_unique<CallExprAST>(callee, std::move(args)));
+                ch_flag = getNextToken();
             } else {
                 operands.push(std::make_unique<VariableExprAST>(callee));
+                ch_flag = getNextToken();
             }
         } else {
             switch (ch_flag) {
@@ -232,6 +235,8 @@ std::unique_ptr<ExprAST> ParseExpression() {
             }
         }
     }
+
+    getNextToken();
 
     while (!operators.empty()) {
         auto op = std::move(operators.top());

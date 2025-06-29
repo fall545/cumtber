@@ -14,6 +14,7 @@ extern std::unique_ptr<ExprAST> ParseExpression();
 std::unique_ptr<ExprAST> ParseIfExpr() {
     // 进入该函数时，CurTok和IdentifierStr已是"if"，且已getNextToken()
     // 解析条件（表达式）
+    // getNextToken();
     auto Cond = ParseExpression();
     if (!Cond) return nullptr;
     
@@ -21,17 +22,18 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     auto Then = ParseExpression();
     if (!Then) return nullptr;
     
+    getNextToken();   // }
     // 检查else
     if (!(CurTok == tok_identifier && IdentifierStr == "else")) {
         syntaxerror("if statement , missing 'else' keyword");
         return nullptr;
     }
     getNextToken(); // 跳过else
-    
+    getNextToken(); // {
     // 解析else分支（表达式）
     auto Else = ParseExpression();
     if (!Else) return nullptr;
-    
+    getNextToken(); // }
     return std::unique_ptr<IfExprAST>(new IfExprAST(std::move(Cond), std::move(Then), std::move(Else)));
 }
 
