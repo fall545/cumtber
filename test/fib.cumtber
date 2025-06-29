@@ -1,14 +1,14 @@
 
 def fib n {       # fib
-    if n==1 {
-        1;
+    if n-1 =1 {
+        1 ;
     }
     else{
-        if n==2{
-            2;
+        if n-2=0 {
+            2 ;
         }
         else{
-            fib (n-1) + fib (n-2); #recursion
+            fib (n-1) + fib (n-2) ; #recursion
         }
     }
 }
