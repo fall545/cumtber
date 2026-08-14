@@ -1,88 +1,153 @@
 # cumtber
-parser
 
-测试方法
-(base) ➜  build git:(main) ./cumtber <../test/fib.cumtber
-或者lldm gdb调试
+`cumtber` is a small, experimental language front end written in C++17. It
+tokenizes source code, parses it into an abstract syntax tree (AST), and prints
+a textual representation of the parsed program.
 
+The project is intended for learning and experimenting with the fundamentals
+of compiler construction: lexical analysis, expression parsing, AST design,
+operator precedence, functions, and control flow.
 
+> [!NOTE]
+> This project is under active development. It currently produces diagnostic
+> AST-like text; it does not generate machine code or execute the input program.
 
-2025.6.28
-报错信息规范
-"[报错的部分] , 具体原因"
-e.g
-function definition error , missing "def"
-使用syntaxerror进行输出
+## Features
 
-syntaxerror("function definition error , missing "def" ");
-string error = "function definition error , missing "def" "
-syntaxerror(error);
+- Numeric literals and identifiers
+- Binary expressions with `+`, `-`, `*`, `<`, and `=`
+- Parenthesized expressions
+- Function definitions and calls, including nested calls
+- `if`/`else` expressions
+- `while` expressions
+- Line comments beginning with `#`
+- Line-numbered syntax errors
 
+## Requirements
 
+- A C++17-compatible compiler
+- CMake 3.10 or later
+- A build tool supported by CMake, such as Make or Ninja
 
+## Build
 
+Clone the repository and build the executable from the project root:
 
-2025.6.24
-codegen写法规范,注意类外定义,别再动别人要动的文件了
-std::string codegen(){
-    auto info.= expr->codegen;
-    .....
-    ....
-    auto info2.= expr2->codegen;
+```bash
+git clone https://github.com/fall545/cumtber.git
+cd cumtber
+cmake -S . -B build
+cmake --build build
+```
 
-    return ".......info1.....info2.....";
+The resulting executable is `build/cumtber`.
 
+## Usage
+
+The parser reads source code from standard input. Run it interactively:
+
+```bash
+./build/cumtber
+```
+
+Or provide one of the sample programs through standard input:
+
+```bash
+./build/cumtber < test/fib.cumtber
+./build/cumtber < test/if.cumtber
+./build/cumtber < test/while.cumtber
+```
+
+Due to the current EOF-handling limitation described below, the process may
+need to be stopped manually after it parses the available input.
+
+## Language Examples
+
+Define a function:
+
+```text
+def minus a, b {
+    a - b;
 }
+```
 
+Call a function:
 
-2025.6.21
-所有建树返回的跟节点如果解析失败就return nullptr;
+```text
+minus(10, 3);
+```
 
+Use conditional expressions:
 
+```text
+if x {
+    y;
+} else {
+    z;
+}
+```
 
+Use a loop:
 
+```text
+while x {
+    y;
+}
+```
 
-说明:
-getNextToken函数执行后会把token写入CurTok
-getNextToken是会消耗token的，如果想要跳过 token也可以调用函数来实现
+Comments extend from `#` to the end of the line:
 
-要求:
+```text
+# Compute the difference
+def minus a, b {
+    a - b;
+}
+```
 
-所有的.cpp放到src目录下,.h放到include目录中
-例如
-project_root/
-├── CMakeLists.txt
-├── main.cpp
-├── src/
-│   ├── foo.cpp
-│   ├── bar.cpp
-├── include/
-│   ├── foo.h
-│   ├── bar.h
+See the [`test`](test) directory for more complete input examples.
 
-文件命名规范
-写parser的时候要单独新建一个.cpp的文件,如要完成expression的parser那就新建expressionast.cpp
-不同的parser要放到不同的.cpp中,并把对外开放的接口函数原型写到同名的.h中如expressionast.h
+## Project Structure
 
-函数的本体要写到.cpp中,声明必须统一放到同名.h文件中,方便调用
+```text
+.
+|-- Cmakelists.txt       # CMake build configuration
+|-- main.cpp             # Parser entry point and top-level loop
+|-- include/
+|   |-- ast.h            # AST node definitions
+|   |-- parser.h         # Parser interface
+|   `-- tokenizer.h      # Tokenizer and token definitions
+|-- src/
+|   |-- expressionast.cpp
+|   |-- functionast.cpp
+|   `-- if-while.cpp
+`-- test/                # Example cumtber programs
+```
 
-变量命名不做规范了
+## How It Works
 
+1. The tokenizer reads characters from standard input and emits tokens.
+2. The parser consumes those tokens and constructs AST nodes.
+3. Each AST node's `codegen()` method returns a textual description.
+4. The top-level loop prints the result and continues until end-of-file.
 
-注意
-若添加了新的文件一定要重新编译
-cmake ..
-make
+## Current Limitations
 
-TODO:
-恺哥 完成函数
-振宇 expression
-宋 完成循环 
+- There is no runtime, interpreter, LLVM backend, or native code generation.
+- The tokenizer does not yet handle a standard stream EOF reliably, so the
+  parser may not terminate automatically after redirected input is exhausted.
+- The grammar and error recovery are still experimental.
+- Function bodies and control-flow blocks currently support only a limited
+  subset of statements.
+- Automated tests have not yet been added; files in `test/` are manual parser
+  inputs.
 
-编译方法:
-cd 项目所在根目录
-mkdir build
-cd build
-cmake ..
-make
+## Contributing
 
+Contributions are welcome. Keep public declarations in `include/`, place
+implementations in `src/`, and add or update a sample input in `test/` when
+changing the grammar. Please build the project and run the relevant samples
+before opening a pull request.
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
